@@ -3,34 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ownTrade — Coming Soon</title>
-  <meta name="description" content="ownTrade — Automated trading bots. Precision enters the market. Coming 2026.">
+  <title>ownTRADE — Coming Soon</title>
+  <meta name="description" content="ownTRADE — Automated trading bots. Precision enters the market. Coming 2026.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --bg-primary: #050a12;
-      --bg-secondary: #0a1225;
-      --green: #00e676;
-      --green-dim: #00c853;
-      --green-ghost: rgba(0, 230, 118, 0.06);
-      --red: #ff1744;
-      --red-dim: #d50000;
-      --text-primary: #e8ece9;
-      --text-muted: #4a6a5a;
-      --text-dim: #2a3a30;
-      --border: rgba(0, 230, 118, 0.08);
+      --bg:        #080A0F;
+      --surface:   #121820;
+      --border:    #1E2736;
+      --cyan:      #00D4FF;
+      --cyan-dim:  rgba(0, 212, 255, 0.12);
+      --cyan-glow: rgba(0, 212, 255, 0.06);
+      --green:     #00E676;
+      --green-dim: rgba(0, 230, 118, 0.12);
+      --red:       #FF3B5C;
+      --red-dim:   rgba(255, 59, 92, 0.12);
+      --gold:      #FFB800;
+      --gold-dim:  rgba(255, 184, 0, 0.12);
+      --text:      #E8EAED;
+      --muted:     #6B7280;
+      --dim:       #2A3545;
     }
 
     html { scroll-behavior: smooth; }
 
     body {
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
       display: flex;
@@ -43,559 +47,494 @@
 
     /* ── Grid overlay ── */
     .grid-overlay {
-      position: fixed;
-      top: 0; left: 0;
+      position: fixed; top: 0; left: 0;
       width: 100%; height: 100%;
-      z-index: 1;
-      pointer-events: none;
+      z-index: 1; pointer-events: none;
       background-image:
-        linear-gradient(rgba(0, 230, 118, 0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 230, 118, 0.025) 1px, transparent 1px);
+        linear-gradient(rgba(0,212,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.018) 1px, transparent 1px);
       background-size: 60px 60px;
-      animation: gridShift 20s linear infinite;
+      animation: gridShift 25s linear infinite;
     }
     @keyframes gridShift {
       0% { background-position: 0 0; }
       100% { background-position: 60px 60px; }
     }
 
-    /* ── Multiple scan lines ── */
+    /* ── Scan lines ── */
     .scanline {
-      position: fixed;
-      left: 0;
+      position: fixed; left: 0;
       width: 100%; height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(0, 230, 118, 0.1), transparent);
-      z-index: 2;
-      pointer-events: none;
+      background: linear-gradient(90deg, transparent, rgba(0,212,255,0.08), transparent);
+      z-index: 2; pointer-events: none;
     }
-    .scanline:nth-child(1) { animation: scanDown 6s linear infinite; }
-    .scanline:nth-child(2) { animation: scanDown 9s linear infinite 3s; opacity: 0.5; }
-    .scanline:nth-child(3) { animation: scanUp 7s linear infinite 1.5s; opacity: 0.3; }
+    .scanline:nth-child(1) { animation: scanDown 7s linear infinite; }
+    .scanline:nth-child(2) { animation: scanDown 11s linear infinite 4s; opacity: 0.4; }
+    .scanline:nth-child(3) { animation: scanUp 9s linear infinite 2s; opacity: 0.25; }
+    @keyframes scanDown { 0% { top: -2px; } 100% { top: 100vh; } }
+    @keyframes scanUp   { 0% { top: 100vh; } 100% { top: -2px; } }
 
-    @keyframes scanDown {
-      0% { top: -2px; }
-      100% { top: 100vh; }
-    }
-    @keyframes scanUp {
-      0% { top: 100vh; }
-      100% { top: -2px; }
-    }
-
-    /* ── Glow orbs - more of them, more movement ── */
+    /* ── Glow orbs ── */
     .glow-orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(120px);
-      pointer-events: none;
-      z-index: 0;
+      position: fixed; border-radius: 50%;
+      filter: blur(120px); pointer-events: none; z-index: 0;
     }
     .glow-orb.g1 {
       width: 500px; height: 500px;
-      background: rgba(0, 230, 118, 0.045);
-      top: 15%; left: -10%;
-      animation: orbit1 16s ease-in-out infinite;
+      background: rgba(0,212,255,0.04);
+      top: 10%; left: -8%;
+      animation: orbit1 18s ease-in-out infinite;
     }
     .glow-orb.g2 {
-      width: 350px; height: 350px;
-      background: rgba(255, 23, 68, 0.035);
-      bottom: 10%; right: -5%;
-      animation: orbit2 20s ease-in-out infinite;
+      width: 380px; height: 380px;
+      background: rgba(255,59,92,0.03);
+      bottom: 8%; right: -5%;
+      animation: orbit2 22s ease-in-out infinite;
     }
     .glow-orb.g3 {
-      width: 300px; height: 300px;
-      background: rgba(0, 230, 118, 0.03);
-      top: 60%; left: 50%;
-      animation: orbit3 14s ease-in-out infinite;
+      width: 320px; height: 320px;
+      background: rgba(0,230,118,0.025);
+      top: 55%; left: 55%;
+      animation: orbit3 16s ease-in-out infinite;
     }
-
+    .glow-orb.g4 {
+      width: 260px; height: 260px;
+      background: rgba(255,184,0,0.02);
+      top: 30%; right: 10%;
+      animation: orbit1 20s ease-in-out infinite 5s;
+    }
     @keyframes orbit1 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      25% { transform: translate(80px, -40px) scale(1.1); }
-      50% { transform: translate(40px, 60px) scale(0.9); }
-      75% { transform: translate(-30px, 20px) scale(1.05); }
+      0%,100%{transform:translate(0,0) scale(1)} 25%{transform:translate(70px,-50px) scale(1.1)} 50%{transform:translate(30px,50px) scale(0.9)} 75%{transform:translate(-40px,20px) scale(1.05)}
     }
     @keyframes orbit2 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(-60px, -50px) scale(1.15); }
-      66% { transform: translate(30px, 40px) scale(0.85); }
+      0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-60px,-40px) scale(1.15)} 66%{transform:translate(30px,30px) scale(0.85)}
     }
     @keyframes orbit3 {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(-100px, -60px); }
+      0%,100%{transform:translate(0,0)} 50%{transform:translate(-80px,-50px)}
     }
 
-    /* ── Corner brackets - animated ── */
-    .corner {
-      position: fixed;
-      width: 40px; height: 40px;
-      z-index: 3;
-      pointer-events: none;
-    }
-    .corner::before, .corner::after {
-      content: '';
-      position: absolute;
-      background: rgba(0, 230, 118, 0.2);
-      animation: cornerPulse 3s ease-in-out infinite;
-    }
-    .corner.tl { top: 24px; left: 24px; }
-    .corner.tl::before { width: 100%; height: 1px; top: 0; left: 0; }
-    .corner.tl::after { width: 1px; height: 100%; top: 0; left: 0; }
+    /* ── Corner brackets ── */
+    .corner { position: fixed; width: 40px; height: 40px; z-index: 3; pointer-events: none; }
+    .corner::before, .corner::after { content:''; position:absolute; background:rgba(0,212,255,0.25); animation:cornerPulse 3s ease-in-out infinite; }
+    .corner.tl { top:24px; left:24px; }
+    .corner.tl::before { width:100%; height:1px; top:0; left:0; }
+    .corner.tl::after  { width:1px; height:100%; top:0; left:0; }
+    .corner.tr { top:24px; right:24px; }
+    .corner.tr::before { width:100%; height:1px; top:0; right:0; }
+    .corner.tr::after  { width:1px; height:100%; top:0; right:0; }
+    .corner.bl { bottom:24px; left:24px; }
+    .corner.bl::before { width:100%; height:1px; bottom:0; left:0; }
+    .corner.bl::after  { width:1px; height:100%; bottom:0; left:0; }
+    .corner.br { bottom:24px; right:24px; }
+    .corner.br::before { width:100%; height:1px; bottom:0; right:0; }
+    .corner.br::after  { width:1px; height:100%; bottom:0; right:0; }
+    @keyframes cornerPulse { 0%,100%{opacity:0.25} 50%{opacity:0.7} }
 
-    .corner.tr { top: 24px; right: 24px; }
-    .corner.tr::before { width: 100%; height: 1px; top: 0; right: 0; }
-    .corner.tr::after { width: 1px; height: 100%; top: 0; right: 0; }
-
-    .corner.bl { bottom: 24px; left: 24px; }
-    .corner.bl::before { width: 100%; height: 1px; bottom: 0; left: 0; }
-    .corner.bl::after { width: 1px; height: 100%; bottom: 0; left: 0; }
-
-    .corner.br { bottom: 24px; right: 24px; }
-    .corner.br::before { width: 100%; height: 1px; bottom: 0; right: 0; }
-    .corner.br::after { width: 1px; height: 100%; bottom: 0; right: 0; }
-
-    @keyframes cornerPulse {
-      0%, 100% { opacity: 0.2; }
-      50% { opacity: 0.6; }
-    }
-
-    /* ── Data streams - vertical scrolling numbers ── */
-    .data-stream {
-      position: fixed;
-      top: 0;
-      width: 20px;
-      height: 100vh;
-      z-index: 1;
-      pointer-events: none;
-      overflow: hidden;
-      opacity: 0.06;
-      font-family: 'Space Mono', monospace;
-      font-size: 10px;
-      color: var(--green);
-      writing-mode: vertical-lr;
-      line-height: 20px;
-      animation: streamScroll 15s linear infinite;
-    }
-    .data-stream:nth-child(1) { left: 5%; animation-duration: 18s; }
-    .data-stream:nth-child(2) { left: 15%; animation-duration: 22s; animation-delay: -5s; }
-    .data-stream:nth-child(3) { right: 5%; animation-duration: 16s; animation-delay: -8s; }
-    .data-stream:nth-child(4) { right: 15%; animation-duration: 20s; animation-delay: -3s; }
-
-    @keyframes streamScroll {
-      0% { transform: translateY(-50%); }
-      100% { transform: translateY(0%); }
-    }
-
-    /* ── Floating ticker bar ── */
+    /* ── Ticker bar ── */
     .ticker-bar {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 32px;
-      background: rgba(0, 230, 118, 0.03);
-      border-bottom: 1px solid rgba(0, 230, 118, 0.06);
-      z-index: 20;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
+      position: fixed; top:0; left:0;
+      width:100%; height:32px;
+      background: rgba(0,212,255,0.025);
+      border-bottom: 1px solid rgba(0,212,255,0.06);
+      z-index:20; overflow:hidden;
+      display:flex; align-items:center;
     }
     .ticker-track {
-      display: flex;
-      gap: 40px;
-      animation: tickerScroll 30s linear infinite;
-      white-space: nowrap;
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 1px;
+      display:flex; gap:40px;
+      animation: tickerScroll 35s linear infinite;
+      white-space:nowrap;
+      font-family: 'Inter', sans-serif;
+      font-size:11px; letter-spacing:1px;
     }
-    .ticker-track span {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ticker-track .up { color: var(--green); opacity: 0.5; }
-    .ticker-track .down { color: var(--red); opacity: 0.5; }
-    .ticker-track .dot { color: var(--text-dim); }
+    .ticker-track span { display:inline-flex; align-items:center; gap:6px; }
+    .ticker-track .up   { color:var(--cyan); opacity:0.5; }
+    .ticker-track .down { color:var(--red);  opacity:0.5; }
+    .ticker-track .dot  { color:var(--dim); }
+    @keyframes tickerScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
 
-    @keyframes tickerScroll {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+    /* ── Particles ── */
+    .particle {
+      position:fixed; width:2px; height:2px;
+      border-radius:50%; pointer-events:none; z-index:1;
+      opacity:0; animation:particleFloat linear infinite;
+    }
+    .particle:nth-child(1){left:8%;animation-duration:14s;animation-delay:0s;width:3px;height:3px;background:var(--cyan)}
+    .particle:nth-child(2){left:20%;animation-duration:18s;animation-delay:2s;background:var(--cyan)}
+    .particle:nth-child(3){left:35%;animation-duration:12s;animation-delay:5s;background:var(--green)}
+    .particle:nth-child(4){left:50%;animation-duration:16s;animation-delay:1s;width:3px;height:3px;background:var(--cyan)}
+    .particle:nth-child(5){left:65%;animation-duration:20s;animation-delay:4s;background:var(--gold)}
+    .particle:nth-child(6){left:75%;animation-duration:15s;animation-delay:7s;background:var(--red)}
+    .particle:nth-child(7){left:88%;animation-duration:17s;animation-delay:3s;width:3px;height:3px;background:var(--cyan)}
+    .particle:nth-child(8){left:95%;animation-duration:13s;animation-delay:6s;background:var(--green)}
+    @keyframes particleFloat {
+      0%{opacity:0;transform:translateY(100vh) scale(0)} 5%{opacity:0.4;transform:scale(1)} 95%{opacity:0.4} 100%{opacity:0;transform:translateY(-20vh) scale(0.5)}
+    }
+
+    /* ── Main canvas ── */
+    #chartCanvas {
+      position:fixed; bottom:0; left:0;
+      width:100%; height:45%;
+      z-index:0; pointer-events:none; opacity:0.07;
+      mask-image:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 100%);
+      -webkit-mask-image:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 100%);
+    }
+    #trailCanvas {
+      position:fixed; top:0; left:0;
+      width:100%; height:100%;
+      z-index:4; pointer-events:none;
     }
 
     /* ── Main container ── */
     .main {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 2rem;
-      max-width: 800px;
-      width: 100%;
-      margin-top: 32px;
+      position:relative; z-index:10;
+      display:flex; flex-direction:column;
+      align-items:center; text-align:center;
+      padding:2rem 1.5rem;
+      max-width:900px; width:100%;
+      margin-top:32px;
     }
 
-    /* ── Arrows icon - continuous float ── */
-    .arrows {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 2rem;
-      animation: fadeInUp 1s ease-out 0.2s both;
+    /* ── Logo ── */
+    .logo-wrap {
+      margin-bottom:0.6rem;
+      animation:fadeInUp 1s ease-out 0.3s both;
     }
-    .arrow-up {
-      animation: arrowFloat 2.5s ease-in-out infinite;
-    }
-    .arrow-down {
-      animation: arrowFloat 2.5s ease-in-out infinite 1.25s;
-    }
-    .arrow-up svg {
-      filter: drop-shadow(0 0 18px rgba(0, 230, 118, 0.5));
-    }
-    .arrow-down svg {
-      filter: drop-shadow(0 0 18px rgba(255, 23, 68, 0.5));
-    }
-
-    @keyframes arrowFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    /* ── Logo text with glitch ── */
     .logo {
-      font-size: clamp(3rem, 8vw, 5.5rem);
-      font-weight: 800;
-      letter-spacing: 4px;
-      margin-bottom: 0.5rem;
-      animation: fadeInUp 1s ease-out 0.4s both;
-      position: relative;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      font-size: clamp(3.2rem,9vw,6rem);
+      font-weight:800;
+      letter-spacing:-1px;
+      line-height:1;
     }
-    .logo .highlight {
-      color: var(--green);
-      text-shadow: 0 0 30px rgba(0, 230, 118, 0.3);
-      position: relative;
-      display: inline-block;
-    }
+    .logo .own   { color:var(--text); }
+    .logo .trade { color:var(--cyan); text-shadow:0 0 40px rgba(0,212,255,0.35); }
 
     /* Glitch on hover */
-    .logo:hover .highlight {
-      animation: glitch 0.4s ease-in-out;
-    }
+    .logo:hover .trade { animation:glitch 0.4s ease-in-out; }
     @keyframes glitch {
-      0% { transform: translate(0); }
-      10% { transform: translate(-3px, 2px); text-shadow: 3px 0 var(--red), -3px 0 cyan; }
-      20% { transform: translate(3px, -2px); text-shadow: -3px 0 var(--red), 3px 0 cyan; }
-      30% { transform: translate(-2px, 1px); text-shadow: 2px 0 var(--red), -2px 0 cyan; }
-      40% { transform: translate(2px, -1px); }
-      50% { transform: translate(0); text-shadow: 0 0 30px rgba(0, 230, 118, 0.3); }
-      100% { transform: translate(0); text-shadow: 0 0 30px rgba(0, 230, 118, 0.3); }
+      0%{transform:translate(0)} 10%{transform:translate(-3px,2px);text-shadow:3px 0 var(--red),-3px 0 var(--green)}
+      20%{transform:translate(3px,-2px);text-shadow:-3px 0 var(--red),3px 0 var(--green)}
+      30%{transform:translate(-2px,1px)} 50%{transform:translate(0);text-shadow:0 0 40px rgba(0,212,255,0.35)} 100%{transform:translate(0);text-shadow:0 0 40px rgba(0,212,255,0.35)}
     }
 
-    /* ── Subtitle with typing effect ── */
+    /* ── Subtitle ── */
     .subtitle {
-      font-family: 'Space Mono', monospace;
-      font-size: clamp(0.65rem, 2vw, 0.85rem);
-      letter-spacing: 8px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 3rem;
-      animation: fadeInUp 1s ease-out 0.6s both;
-      position: relative;
+      font-family:'Inter',sans-serif;
+      font-size:clamp(0.6rem,1.8vw,0.8rem);
+      letter-spacing:7px; text-transform:uppercase;
+      color:var(--muted); margin-bottom:2.5rem;
+      animation:fadeInUp 1s ease-out 0.5s both;
     }
     .subtitle .cursor {
-      display: inline-block;
-      width: 2px;
-      height: 1em;
-      background: var(--green);
-      margin-left: 4px;
-      vertical-align: middle;
-      animation: blink 0.8s step-end infinite;
+      display:inline-block; width:2px; height:1em;
+      background:var(--cyan); margin-left:4px;
+      vertical-align:middle; animation:blink 0.8s step-end infinite;
     }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-    /* ── Divider - animated width ── */
+    /* ── Divider ── */
     .divider {
-      width: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--green), transparent);
-      margin-bottom: 3rem;
-      animation: fadeInUp 1s ease-out 0.7s both, expandLine 2s ease-out 1.2s both;
+      width:0; height:1px;
+      background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+      margin-bottom:2.5rem;
+      animation:fadeInUp 1s ease-out 0.6s both, expandLine 2s ease-out 1s both;
     }
-    @keyframes expandLine {
-      from { width: 0; }
-      to { width: 80px; }
-    }
+    @keyframes expandLine { from{width:0} to{width:100px} }
 
-    /* ── Teaser text ── */
-    .teaser {
-      margin-bottom: 1rem;
-      animation: fadeInUp 1s ease-out 0.8s both;
-    }
+    /* ── Teaser ── */
+    .teaser { margin-bottom:1rem; animation:fadeInUp 1s ease-out 0.7s both; }
     .teaser-line {
-      font-size: clamp(1.1rem, 3vw, 1.5rem);
-      font-weight: 300;
-      line-height: 1.8;
-      color: var(--text-muted);
-      opacity: 0;
+      font-size:clamp(1rem,2.5vw,1.4rem);
+      font-weight:300; line-height:1.9;
+      color:var(--muted); opacity:0;
     }
-    .teaser-line.accent {
-      font-weight: 600;
-      color: var(--green);
-      text-shadow: 0 0 20px rgba(0, 230, 118, 0.2);
-    }
-    .teaser-line.visible {
-      animation: typeReveal 0.8s ease-out forwards;
-    }
-    @keyframes typeReveal {
-      0% { opacity: 0; transform: translateY(10px); filter: blur(4px); }
-      100% { opacity: 1; transform: translateY(0); filter: blur(0); }
-    }
+    .teaser-line.accent { font-weight:700; color:var(--cyan); text-shadow:0 0 20px rgba(0,212,255,0.2); }
+    .teaser-line.visible { animation:typeReveal 0.8s ease-out forwards; }
+    @keyframes typeReveal { 0%{opacity:0;transform:translateY(10px);filter:blur(4px)} 100%{opacity:1;transform:translateY(0);filter:blur(0)} }
 
-    /* ── Status indicator - pulsing dot ── */
+    /* ── Status ── */
     .status {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 1.5rem 0;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 3px;
-      color: var(--text-dim);
-      animation: fadeInUp 1s ease-out 0.9s both;
+      display:flex; align-items:center; gap:10px;
+      margin:1.5rem 0;
+      font-family:'Inter',sans-serif; font-size:0.65rem;
+      letter-spacing:4px; color:var(--dim);
+      animation:fadeInUp 1s ease-out 0.8s both;
     }
     .status-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--green);
-      animation: statusPulse 2s ease-in-out infinite;
-      box-shadow: 0 0 10px rgba(0, 230, 118, 0.6);
+      width:8px; height:8px; border-radius:50%;
+      background:var(--cyan);
+      animation:statusPulse 2s ease-in-out infinite;
+      box-shadow:0 0 12px rgba(0,212,255,0.7);
     }
     @keyframes statusPulse {
-      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 10px rgba(0, 230, 118, 0.6); }
-      50% { opacity: 0.4; transform: scale(0.7); box-shadow: 0 0 4px rgba(0, 230, 118, 0.3); }
+      0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 12px rgba(0,212,255,0.7)}
+      50%{opacity:0.4;transform:scale(0.7);box-shadow:0 0 4px rgba(0,212,255,0.3)}
     }
 
-    /* ── Coming soon badge ── */
+    /* ── Year badge ── */
     .badge-container {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin: 2rem 0;
-      animation: fadeInUp 1s ease-out 1s both;
+      display:flex; align-items:center; gap:16px;
+      margin:1.5rem 0;
+      animation:fadeInUp 1s ease-out 0.9s both;
     }
-    .badge-line {
-      width: 50px;
-      height: 1px;
-      background: rgba(0, 230, 118, 0.3);
-      animation: lineExpand 1.5s ease-out 1.5s both;
-    }
-    @keyframes lineExpand {
-      from { width: 0; opacity: 0; }
-      to { width: 50px; opacity: 1; }
-    }
+    .badge-line { width:50px; height:1px; background:rgba(0,212,255,0.3); animation:lineExpand 1.5s ease-out 1.5s both; }
+    @keyframes lineExpand { from{width:0;opacity:0} to{width:50px;opacity:1} }
     .badge {
-      font-family: 'Space Mono', monospace;
-      font-size: clamp(1rem, 2.5vw, 1.4rem);
-      font-weight: 700;
-      letter-spacing: 12px;
-      color: var(--green);
-      text-shadow: 0 0 20px rgba(0, 230, 118, 0.3);
-      animation: badgePulse 4s ease-in-out infinite;
+      font-family:'Inter',sans-serif; font-size:clamp(1rem,2.5vw,1.4rem);
+      font-weight:700; letter-spacing:12px; color:var(--cyan);
+      text-shadow:0 0 20px rgba(0,212,255,0.4);
+      animation:badgePulse 4s ease-in-out infinite;
     }
     @keyframes badgePulse {
-      0%, 100% { text-shadow: 0 0 20px rgba(0, 230, 118, 0.3); }
-      50% { text-shadow: 0 0 40px rgba(0, 230, 118, 0.6), 0 0 80px rgba(0, 230, 118, 0.2); }
+      0%,100%{text-shadow:0 0 20px rgba(0,212,255,0.4)} 50%{text-shadow:0 0 50px rgba(0,212,255,0.7),0 0 100px rgba(0,212,255,0.2)}
     }
 
-    /* ── Tags - staggered entry ── */
+    /* ══════════════════════════════════════════
+       TRADING MODES — animierte Icons
+    ══════════════════════════════════════════ */
+    .modes {
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+      width:100%;
+      margin:2rem 0;
+      animation:fadeInUp 1s ease-out 1s both;
+    }
+
+    .mode-card {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:24px 16px 20px;
+      display:flex; flex-direction:column;
+      align-items:center; gap:14px;
+      position:relative; overflow:hidden;
+      transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+      cursor:default;
+    }
+    .mode-card::before {
+      content:''; position:absolute;
+      top:0; left:0; right:0; height:2px;
+      border-radius:14px 14px 0 0;
+      opacity:0; transition:opacity 0.4s;
+    }
+    .mode-card:hover { transform:translateY(-6px); }
+    .mode-card:hover::before { opacity:1; }
+
+    .mode-card.scalping { --accent:var(--cyan); --accent-dim:var(--cyan-dim); }
+    .mode-card.daytrading { --accent:var(--gold); --accent-dim:var(--gold-dim); }
+    .mode-card.swing { --accent:var(--green); --accent-dim:var(--green-dim); }
+
+    .mode-card::before { background:var(--accent); }
+    .mode-card:hover { border-color:rgba(from var(--accent) r g b / 0.4); background:var(--accent-dim); box-shadow:0 12px 40px rgba(from var(--accent) r g b / 0.12); }
+
+    .mode-icon {
+      width:72px; height:56px;
+      position:relative; flex-shrink:0;
+    }
+
+    .mode-label {
+      font-family:'Inter',sans-serif;
+      font-size:0.6rem; font-weight:600;
+      letter-spacing:4px; text-transform:uppercase;
+      color:var(--accent);
+    }
+    .mode-name {
+      font-family:'Plus Jakarta Sans',sans-serif;
+      font-size:1rem; font-weight:700;
+      color:var(--text); letter-spacing:-0.3px;
+    }
+    .mode-desc {
+      font-family:'Inter',sans-serif;
+      font-size:0.7rem; color:var(--muted);
+      line-height:1.5;
+    }
+    .mode-text { display:flex; flex-direction:column; gap:4px; align-items:center; }
+
+    /* ── SCALPING ICON — EKG Herzschlag mit Blitz ── */
+    .ekg-svg { width:72px; height:56px; }
+    .ekg-line {
+      stroke: #00D4FF;
+      stroke-width: 2.5;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 6px rgba(0,212,255,0.8));
+      stroke-dasharray: 200;
+      stroke-dashoffset: 200;
+      animation: ekgDraw 1.5s ease-out 1.2s forwards, ekgPulse 2.5s ease-in-out 2.7s infinite;
+    }
+    .ekg-bolt {
+      fill: #00D4FF;
+      filter: drop-shadow(0 0 8px rgba(0,212,255,0.9));
+      animation: boltFlash 2.5s ease-in-out 2.7s infinite;
+      opacity: 0;
+    }
+    @keyframes ekgDraw {
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes ekgPulse {
+      0%,100%  { stroke-dashoffset:0; filter:drop-shadow(0 0 6px rgba(0,212,255,0.8)); }
+      40%,60%  { filter:drop-shadow(0 0 14px rgba(0,212,255,1)); }
+    }
+    @keyframes boltFlash {
+      0%,30%   { opacity:0; transform:scale(0.8); }
+      35%,55%  { opacity:1; transform:scale(1); filter:drop-shadow(0 0 12px rgba(0,212,255,1)); }
+      70%,100% { opacity:0; }
+    }
+    .mode-card.scalping:hover .ekg-line {
+      animation: ekgPulse 0.8s ease-in-out infinite;
+    }
+
+    /* ── DAYTRADING ICON — Kerzen-Chart aufbauend ── */
+    .candle-svg { width:72px; height:56px; }
+    .candle-wick {
+      stroke: #FFB800; stroke-width:1.5; stroke-linecap:round;
+      filter: drop-shadow(0 0 4px rgba(255,184,0,0.6));
+    }
+    .candle-body {
+      rx: 2;
+      filter: drop-shadow(0 0 5px rgba(255,184,0,0.5));
+      transform-origin: bottom center;
+      transform: scaleY(0);
+    }
+    .candle-body.bull { fill:#FFB800; }
+    .candle-body.bear { fill:#FF3B5C; }
+
+    .candle-body:nth-child(1)  { animation: candleGrow 0.4s ease-out 1.3s forwards; }
+    .candle-body:nth-child(2)  { animation: candleGrow 0.4s ease-out 1.6s forwards; }
+    .candle-body:nth-child(3)  { animation: candleGrow 0.4s ease-out 1.9s forwards; }
+    .candle-body:nth-child(4)  { animation: candleGrow 0.4s ease-out 2.2s forwards; }
+    .candle-body:nth-child(5)  { animation: candleGrow 0.4s ease-out 2.5s forwards; }
+
+    .candle-wick { opacity:0; }
+    .candle-wick:nth-child(6)  { animation: wickFade 0.3s ease-out 1.3s forwards; }
+    .candle-wick:nth-child(7)  { animation: wickFade 0.3s ease-out 1.6s forwards; }
+    .candle-wick:nth-child(8)  { animation: wickFade 0.3s ease-out 1.9s forwards; }
+    .candle-wick:nth-child(9)  { animation: wickFade 0.3s ease-out 2.2s forwards; }
+    .candle-wick:nth-child(10) { animation: wickFade 0.3s ease-out 2.5s forwards; }
+
+    @keyframes candleGrow { from{transform:scaleY(0)} to{transform:scaleY(1)} }
+    @keyframes wickFade   { from{opacity:0} to{opacity:1} }
+
+    .candle-glow {
+      fill: none; stroke:#FFB800; stroke-width:0.5;
+      opacity:0; rx:3;
+      animation: candleGlowPulse 2s ease-in-out 3s infinite;
+    }
+    @keyframes candleGlowPulse {
+      0%,100%{opacity:0;stroke-width:0.5} 50%{opacity:0.4;stroke-width:2;filter:drop-shadow(0 0 8px rgba(255,184,0,0.6))}
+    }
+
+    /* ── SWING ICON — Berg mit Trail + Glow ── */
+    .mountain-svg { width:72px; height:56px; }
+    .mountain-fill {
+      fill:none; stroke:none;
+      animation:mountainReveal 1.5s ease-out 1.2s forwards;
+    }
+    .mountain-stroke {
+      stroke: #00E676; stroke-width:2.5; fill:none;
+      stroke-linecap:round; stroke-linejoin:round;
+      filter:drop-shadow(0 0 8px rgba(0,230,118,0.7));
+      stroke-dasharray:300; stroke-dashoffset:300;
+      animation:mountainDraw 1.8s ease-out 1.2s forwards;
+    }
+    .mountain-peak-glow {
+      fill:#00E676; opacity:0;
+      animation:peakGlow 2.5s ease-in-out 3s infinite;
+      filter:drop-shadow(0 0 12px rgba(0,230,118,1));
+    }
+    .mountain-trail {
+      stroke:#00E676; stroke-width:1; fill:none;
+      opacity:0; stroke-dasharray:4 4;
+      animation:trailFade 2s ease-in-out 3.2s infinite;
+    }
+    .mountain-area {
+      fill:url(#mountainGrad);
+      opacity:0;
+      animation:areaFade 0.8s ease-out 3s forwards;
+    }
+    @keyframes mountainDraw { to{stroke-dashoffset:0} }
+    @keyframes peakGlow {
+      0%,100%{opacity:0;transform:scale(1)} 40%,60%{opacity:1;transform:scale(1.5)}
+    }
+    @keyframes trailFade {
+      0%,100%{opacity:0} 30%,70%{opacity:0.5}
+    }
+    @keyframes areaFade { to{opacity:1} }
+
+    /* ── Tags ── */
     .tags {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 3rem;
+      display:flex; gap:10px; flex-wrap:wrap;
+      justify-content:center; margin-bottom:2.5rem;
     }
     .tag {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      padding: 8px 16px;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      transition: all 0.4s ease;
-      opacity: 0;
-      animation: tagPop 0.5s ease-out forwards;
+      font-family:'Inter',sans-serif;
+      font-size:0.62rem; letter-spacing:2.5px; text-transform:uppercase;
+      color:var(--dim); padding:7px 16px;
+      border:1px solid rgba(0,212,255,0.08); border-radius:20px;
+      transition:all 0.4s ease; opacity:0;
+      animation:tagPop 0.5s ease-out forwards;
     }
-    .tag:nth-child(1) { animation-delay: 1.3s; }
-    .tag:nth-child(2) { animation-delay: 1.5s; }
-    .tag:nth-child(3) { animation-delay: 1.7s; }
-    .tag:nth-child(4) { animation-delay: 1.9s; }
+    .tag:nth-child(1){animation-delay:1.4s} .tag:nth-child(2){animation-delay:1.6s}
+    .tag:nth-child(3){animation-delay:1.8s} .tag:nth-child(4){animation-delay:2s}
+    @keyframes tagPop { 0%{opacity:0;transform:scale(0.8) translateY(10px)} 100%{opacity:1;transform:scale(1) translateY(0)} }
+    .tag:hover { border-color:rgba(0,212,255,0.4); color:var(--cyan); background:var(--cyan-dim); transform:translateY(-3px); box-shadow:0 4px 20px rgba(0,212,255,0.1); }
 
-    @keyframes tagPop {
-      0% { opacity: 0; transform: scale(0.8) translateY(10px); }
-      100% { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    .tag:hover {
-      border-color: rgba(0, 230, 118, 0.4);
-      color: var(--green);
-      background: var(--green-ghost);
-      transform: translateY(-3px) scale(1.05);
-      box-shadow: 0 4px 20px rgba(0, 230, 118, 0.1);
-    }
-
-    /* ── Links section ── */
+    /* ── Links ── */
     .links {
-      display: flex;
-      gap: 24px;
-      align-items: center;
-      flex-wrap: wrap;
-      justify-content: center;
-      animation: fadeInUp 1s ease-out 2.1s both;
+      display:flex; gap:20px; align-items:center;
+      flex-wrap:wrap; justify-content:center;
+      animation:fadeInUp 1s ease-out 2.2s both;
     }
-
     .link-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.8rem;
-      letter-spacing: 2px;
-      color: var(--text-muted);
-      padding: 14px 28px;
-      border: 1px solid rgba(0, 230, 118, 0.12);
-      border-radius: 6px;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      position: relative;
-      overflow: hidden;
+      display:flex; align-items:center; gap:10px;
+      text-decoration:none;
+      font-family:'Inter',sans-serif; font-size:0.78rem;
+      letter-spacing:1.5px; color:var(--muted);
+      padding:13px 26px;
+      border:1px solid rgba(0,212,255,0.1); border-radius:8px;
+      transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+      position:relative; overflow:hidden;
     }
     .link-btn::before {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%;
-      width: 200%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(0, 230, 118, 0.06), transparent);
-      animation: shimmer 3s ease-in-out infinite;
+      content:''; position:absolute;
+      top:0; left:-200%; width:200%; height:100%;
+      background:linear-gradient(90deg,transparent,rgba(0,212,255,0.06),transparent);
+      animation:shimmer 3.5s ease-in-out infinite;
     }
-    @keyframes shimmer {
-      0% { left: -200%; }
-      100% { left: 200%; }
-    }
-    .link-btn:hover {
-      border-color: rgba(0, 230, 118, 0.5);
-      color: var(--green);
-      box-shadow: 0 0 30px rgba(0, 230, 118, 0.12), inset 0 0 30px rgba(0, 230, 118, 0.03);
-      transform: translateY(-3px);
-    }
-    .link-btn svg {
-      width: 18px;
-      height: 18px;
-      fill: currentColor;
-      flex-shrink: 0;
-      transition: transform 0.3s ease;
-    }
-    .link-btn:hover svg {
-      transform: scale(1.2);
-    }
-
-    .link-separator {
-      width: 4px; height: 4px;
-      border-radius: 50%;
-      background: var(--text-dim);
-      animation: dotPulse 2s ease-in-out infinite;
-    }
-    @keyframes dotPulse {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
-    }
+    @keyframes shimmer { 0%{left:-200%} 100%{left:200%} }
+    .link-btn:hover { border-color:rgba(0,212,255,0.5); color:var(--cyan); box-shadow:0 0 30px rgba(0,212,255,0.1); transform:translateY(-3px); }
+    .link-btn svg { width:18px; height:18px; fill:currentColor; flex-shrink:0; transition:transform 0.3s; }
+    .link-btn:hover svg { transform:scale(1.2); }
+    .link-separator { width:4px; height:4px; border-radius:50%; background:var(--dim); animation:dotPulse 2s ease-in-out infinite; }
+    @keyframes dotPulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
 
     /* ── Footer ── */
     .footer {
-      position: fixed;
-      bottom: 24px;
-      z-index: 10;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.6rem;
-      letter-spacing: 3px;
-      color: var(--text-dim);
-      animation: fadeInUp 1s ease-out 2.3s both;
+      position:fixed; bottom:24px; z-index:10;
+      font-family:'Inter',sans-serif; font-size:0.58rem;
+      letter-spacing:3px; color:var(--dim);
+      animation:fadeInUp 1s ease-out 2.4s both;
     }
 
-    /* ── Animations ── */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(25px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── Particles - more of them ── */
-    .particle {
-      position: fixed;
-      width: 2px; height: 2px;
-      background: var(--green);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 1;
-      opacity: 0;
-      animation: particleFloat linear infinite;
-    }
-    .particle:nth-child(1) { left: 8%; animation-duration: 14s; animation-delay: 0s; width: 3px; height: 3px; }
-    .particle:nth-child(2) { left: 20%; animation-duration: 18s; animation-delay: 2s; }
-    .particle:nth-child(3) { left: 35%; animation-duration: 12s; animation-delay: 5s; }
-    .particle:nth-child(4) { left: 50%; animation-duration: 16s; animation-delay: 1s; width: 3px; height: 3px; }
-    .particle:nth-child(5) { left: 65%; animation-duration: 20s; animation-delay: 4s; }
-    .particle:nth-child(6) { left: 75%; animation-duration: 15s; animation-delay: 7s; }
-    .particle:nth-child(7) { left: 88%; animation-duration: 17s; animation-delay: 3s; width: 3px; height: 3px; }
-    .particle:nth-child(8) { left: 95%; animation-duration: 13s; animation-delay: 6s; }
-    .particle.red { background: var(--red); }
-
-    @keyframes particleFloat {
-      0% { opacity: 0; transform: translateY(100vh) scale(0); }
-      5% { opacity: 0.5; transform: scale(1); }
-      95% { opacity: 0.5; }
-      100% { opacity: 0; transform: translateY(-20vh) scale(0.5); }
-    }
-
-    /* ── Canvas chart ── */
-    #chartCanvas {
-      position: fixed;
-      bottom: 0; left: 0;
-      width: 100%; height: 45%;
-      z-index: 0;
-      pointer-events: none;
-      opacity: 0.09;
-      mask-image: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
-      -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
-    }
-
-    /* ── Mouse trail canvas ── */
-    #trailCanvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: 4;
-      pointer-events: none;
-    }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(25px)} to{opacity:1;transform:translateY(0)} }
 
     /* ── Responsive ── */
-    @media (max-width: 600px) {
-      .links { flex-direction: column; gap: 12px; }
-      .link-separator { display: none; }
-      .tags { gap: 6px; }
-      .tag { font-size: 0.55rem; padding: 5px 10px; }
-      .badge { letter-spacing: 6px; }
-      .data-stream { display: none; }
-      .ticker-track { font-size: 9px; gap: 24px; }
+    @media(max-width:640px) {
+      .modes { grid-template-columns:1fr; gap:12px; }
+      .links { flex-direction:column; gap:12px; }
+      .link-separator { display:none; }
+      .badge { letter-spacing:6px; }
+    }
+    @media(max-width:480px) {
+      .tags { gap:6px; }
+      .tag { font-size:0.55rem; padding:5px 10px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Background effects -->
   <div class="grid-overlay"></div>
   <div class="scanline"></div>
   <div class="scanline"></div>
@@ -603,53 +542,31 @@
   <div class="glow-orb g1"></div>
   <div class="glow-orb g2"></div>
   <div class="glow-orb g3"></div>
+  <div class="glow-orb g4"></div>
   <div class="corner tl"></div>
   <div class="corner tr"></div>
   <div class="corner bl"></div>
   <div class="corner br"></div>
 
-  <!-- Particles -->
   <div class="particle"></div>
   <div class="particle"></div>
   <div class="particle"></div>
-  <div class="particle red"></div>
   <div class="particle"></div>
-  <div class="particle red"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
   <div class="particle"></div>
   <div class="particle"></div>
 
-  <!-- Data streams -->
-  <div class="data-stream" id="stream1"></div>
-  <div class="data-stream" id="stream2"></div>
-  <div class="data-stream" id="stream3"></div>
-  <div class="data-stream" id="stream4"></div>
+  <div class="ticker-bar"><div class="ticker-track" id="ticker"></div></div>
 
-  <!-- Ticker bar -->
-  <div class="ticker-bar">
-    <div class="ticker-track" id="ticker"></div>
-  </div>
-
-  <!-- Canvases -->
   <canvas id="chartCanvas"></canvas>
   <canvas id="trailCanvas"></canvas>
 
-  <!-- Main content -->
   <main class="main">
 
-    <div class="arrows">
-      <div class="arrow-up">
-        <svg width="48" height="80" viewBox="0 0 48 80">
-          <polygon points="24,0 0,40 10,40 10,80 38,80 38,40 48,40" fill="#00e676"/>
-        </svg>
-      </div>
-      <div class="arrow-down">
-        <svg width="48" height="80" viewBox="0 0 48 80">
-          <polygon points="24,80 0,40 10,40 10,0 38,0 38,40 48,40" fill="#ff1744"/>
-        </svg>
-      </div>
+    <div class="logo-wrap">
+      <h1 class="logo"><span class="own">own</span><span class="trade">TRADE</span></h1>
     </div>
-
-    <h1 class="logo">own<span class="highlight">Trade</span></h1>
 
     <p class="subtitle">
       <span id="typedText"></span><span class="cursor"></span>
@@ -673,6 +590,94 @@
       <div class="badge-line"></div>
     </div>
 
+    <!-- ══ TRADING MODES ══ -->
+    <div class="modes">
+
+      <!-- SCALPING -->
+      <div class="mode-card scalping">
+        <div class="mode-icon">
+          <svg class="ekg-svg" viewBox="0 0 72 56">
+            <!-- EKG Linie -->
+            <polyline class="ekg-line" points="0,32 12,32 16,20 20,44 26,8 30,44 34,28 38,32 52,32 56,32 60,32 72,32"/>
+            <!-- Blitz Icon bei Peak -->
+            <polygon class="ekg-bolt" points="28,4 23,18 27,18 22,30 30,14 26,14"/>
+          </svg>
+        </div>
+        <div class="mode-text">
+          <span class="mode-label">Scalping</span>
+          <span class="mode-name">Lightning Fast</span>
+          <span class="mode-desc">5m · High Frequency<br>Multiple Trades/Day</span>
+        </div>
+      </div>
+
+      <!-- DAYTRADING -->
+      <div class="mode-card daytrading">
+        <div class="mode-icon">
+          <svg class="candle-svg" viewBox="0 0 72 56">
+            <defs>
+              <filter id="goldGlow">
+                <feGaussianBlur stdDeviation="2" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+            </defs>
+            <!-- Candle bodies (scaleY from bottom) -->
+            <rect class="candle-body bull" x="6"  y="28" width="8" height="20" transform-origin="10 48"/>
+            <rect class="candle-body bear" x="20" y="20" width="8" height="28" transform-origin="24 48" fill="#FF3B5C"/>
+            <rect class="candle-body bull" x="34" y="16" width="8" height="32" transform-origin="38 48"/>
+            <rect class="candle-body bear" x="48" y="22" width="8" height="26" transform-origin="52 48" fill="#FF3B5C"/>
+            <rect class="candle-body bull" x="62" y="12" width="8" height="36" transform-origin="66 48"/>
+            <!-- Wicks -->
+            <line class="candle-wick" x1="10" y1="24" x2="10" y2="28"/>
+            <line class="candle-wick" x1="10" y1="48" x2="10" y2="51"/>
+            <line class="candle-wick" x1="24" y1="16" x2="24" y2="20"/>
+            <line class="candle-wick" x1="24" y1="48" x2="24" y2="52"/>
+            <line class="candle-wick" x1="38" y1="10" x2="38" y2="16"/>
+            <line class="candle-wick" x1="38" y1="48" x2="38" y2="52"/>
+            <line class="candle-wick" x1="52" y1="17" x2="52" y2="22"/>
+            <line class="candle-wick" x1="52" y1="48" x2="52" y2="51"/>
+            <line class="candle-wick" x1="66" y1="6"  x2="66" y2="12"/>
+            <line class="candle-wick" x1="66" y1="48" x2="66" y2="52"/>
+            <!-- Glow outline -->
+            <rect class="candle-glow" x="4" y="4" width="64" height="50"/>
+          </svg>
+        </div>
+        <div class="mode-text">
+          <span class="mode-label">Daytrading</span>
+          <span class="mode-name">Precision Entries</span>
+          <span class="mode-desc">15m–1h · 2–5 Trades<br>Session-Based</span>
+        </div>
+      </div>
+
+      <!-- SWING -->
+      <div class="mode-card swing">
+        <div class="mode-icon">
+          <svg class="mountain-svg" viewBox="0 0 72 56">
+            <defs>
+              <linearGradient id="mountainGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00E676" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#00E676" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Mountain filled area -->
+            <polygon class="mountain-area" points="0,54 18,38 28,44 40,12 52,36 64,28 72,32 72,54"/>
+            <!-- Mountain outline stroke -->
+            <polyline class="mountain-stroke" points="0,54 18,38 28,44 40,12 52,36 64,28 72,32"/>
+            <!-- Peak glow dot -->
+            <circle class="mountain-peak-glow" cx="40" cy="12" r="3"/>
+            <!-- Trailing dashed line (uptrend indicator) -->
+            <line class="mountain-trail" x1="0" y1="54" x2="72" y2="10"/>
+          </svg>
+        </div>
+        <div class="mode-text">
+          <span class="mode-label">Swing</span>
+          <span class="mode-name">Ride the Wave</span>
+          <span class="mode-desc">4h–1D · 1–2 Trades<br>Multi-Day Holds</span>
+        </div>
+      </div>
+
+    </div>
+    <!-- ══ END MODES ══ -->
+
     <div class="tags">
       <span class="tag">Long Positions</span>
       <span class="tag">Short Positions</span>
@@ -682,18 +687,12 @@
 
     <div class="links">
       <a href="https://x.com/OTrade666" target="_blank" rel="noopener" class="link-btn">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
         @OTrade666
       </a>
-
       <div class="link-separator"></div>
-
       <a href="mailto:contact@owntrade.org" class="link-btn">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
         contact@owntrade.org
       </a>
     </div>
@@ -704,179 +703,116 @@
 
   <script>
     // ── Typing effect ──
-    const phrases = ['AUTOMATED TRADING BOTS', 'PRECISION ENTERS THE MARKET', '24/7 · LONG · SHORT', 'NO SLEEP · NO EMOTIONS'];
-    let phraseIdx = 0, charIdx = 0, deleting = false;
-    const typedEl = document.getElementById('typedText');
-
-    function typeLoop() {
-      const current = phrases[phraseIdx];
-      if (!deleting) {
-        typedEl.textContent = current.substring(0, charIdx + 1);
-        charIdx++;
-        if (charIdx === current.length) {
-          setTimeout(() => { deleting = true; typeLoop(); }, 2500);
-          return;
-        }
-        setTimeout(typeLoop, 80);
+    const phrases = ['AUTOMATED TRADING BOTS','PRECISION ENTERS THE MARKET','24/7 · LONG · SHORT · SCALPING','NO SLEEP · NO EMOTIONS · NO MERCY'];
+    let phraseIdx=0,charIdx=0,deleting=false;
+    const typedEl=document.getElementById('typedText');
+    function typeLoop(){
+      const cur=phrases[phraseIdx];
+      if(!deleting){
+        typedEl.textContent=cur.substring(0,charIdx+1); charIdx++;
+        if(charIdx===cur.length){setTimeout(()=>{deleting=true;typeLoop()},2500);return;}
+        setTimeout(typeLoop,75);
       } else {
-        typedEl.textContent = current.substring(0, charIdx - 1);
-        charIdx--;
-        if (charIdx === 0) {
-          deleting = false;
-          phraseIdx = (phraseIdx + 1) % phrases.length;
-          setTimeout(typeLoop, 500);
-          return;
-        }
-        setTimeout(typeLoop, 40);
+        typedEl.textContent=cur.substring(0,charIdx-1); charIdx--;
+        if(charIdx===0){deleting=false;phraseIdx=(phraseIdx+1)%phrases.length;setTimeout(typeLoop,400);return;}
+        setTimeout(typeLoop,35);
       }
     }
-    setTimeout(typeLoop, 1500);
+    setTimeout(typeLoop,1200);
 
     // ── Teaser reveal ──
-    setTimeout(() => document.getElementById('teaser1').classList.add('visible'), 2000);
-    setTimeout(() => document.getElementById('teaser2').classList.add('visible'), 2800);
+    setTimeout(()=>document.getElementById('teaser1').classList.add('visible'),1800);
+    setTimeout(()=>document.getElementById('teaser2').classList.add('visible'),2600);
 
-    // ── Ticker bar ──
-    const tickerData = [
-      { sym: 'BTC/USD', val: '+2.41%', up: true },
-      { sym: 'ETH/USD', val: '-0.83%', up: false },
-      { sym: 'SOL/USD', val: '+5.12%', up: true },
-      { sym: 'AAPL', val: '+1.24%', up: true },
-      { sym: 'TSLA', val: '-3.07%', up: false },
-      { sym: 'EUR/USD', val: '+0.31%', up: true },
-      { sym: 'NVDA', val: '+4.72%', up: true },
-      { sym: 'AMZN', val: '-1.53%', up: false },
-      { sym: 'XAU/USD', val: '+0.89%', up: true },
-      { sym: 'GBP/USD', val: '-0.22%', up: false },
-      { sym: 'MSFT', val: '+2.15%', up: true },
-      { sym: 'META', val: '+3.44%', up: true },
+    // ── Ticker ──
+    const tickerData=[
+      {sym:'BTC/USDT',val:'+2.41%',up:true},{sym:'ETH/USDT',val:'-0.83%',up:false},
+      {sym:'SOL/USDT',val:'+5.12%',up:true},{sym:'BNB/USDT',val:'+1.24%',up:true},
+      {sym:'AAPL',val:'+1.18%',up:true},{sym:'TSLA',val:'-3.07%',up:false},
+      {sym:'NVDA',val:'+4.72%',up:true},{sym:'EUR/USD',val:'+0.31%',up:true},
+      {sym:'XAU/USD',val:'+0.89%',up:true},{sym:'GBP/USD',val:'-0.22%',up:false},
     ];
-
-    const tickerEl = document.getElementById('ticker');
-    let tickerHTML = '';
-    for (let i = 0; i < 3; i++) {
-      tickerData.forEach(t => {
-        tickerHTML += `<span class="${t.up ? 'up' : 'down'}">${t.sym} ${t.val}</span><span class="dot">·</span>`;
-      });
-    }
-    tickerEl.innerHTML = tickerHTML;
-
-    // ── Data streams ──
-    function genStream() {
-      let s = '';
-      for (let i = 0; i < 200; i++) {
-        s += (Math.random() > 0.5 ? '1' : '0') + ' ';
-        if (Math.random() > 0.9) s += '  ';
-      }
-      return s;
-    }
-    document.getElementById('stream1').textContent = genStream();
-    document.getElementById('stream2').textContent = genStream();
-    document.getElementById('stream3').textContent = genStream();
-    document.getElementById('stream4').textContent = genStream();
+    const tickerEl=document.getElementById('ticker');
+    let html='';
+    for(let i=0;i<3;i++) tickerData.forEach(t=>{html+=`<span class="${t.up?'up':'down'}">${t.sym} ${t.val}</span><span class="dot">·</span>`;});
+    tickerEl.innerHTML=html;
 
     // ── Chart canvas ──
-    const canvas = document.getElementById('chartCanvas');
-    const ctx = canvas.getContext('2d');
-    let width, height, points = [], candlesticks = [];
+    const canvas=document.getElementById('chartCanvas');
+    const ctx=canvas.getContext('2d');
+    const trailCanvas=document.getElementById('trailCanvas');
+    const tCtx=trailCanvas.getContext('2d');
+    let W,H,points=[],candlesticks=[],offset=0;
 
-    function resize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight * 0.45;
-      trailCanvas.width = window.innerWidth;
-      trailCanvas.height = window.innerHeight;
-      genChartData();
+    function resize(){
+      W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight*0.45;
+      trailCanvas.width=window.innerWidth; trailCanvas.height=window.innerHeight;
+      genData();
     }
-
-    function genChartData() {
-      points = []; candlesticks = [];
-      let y = height * 0.65;
-      for (let i = 0; i <= 80; i++) {
-        y += (Math.random() - 0.52) * 12;
-        y = Math.max(height * 0.1, Math.min(height * 0.9, y));
-        points.push({ x: (i / 80) * width, y });
+    function genData(){
+      points=[]; candlesticks=[];
+      let y=H*0.65;
+      for(let i=0;i<=80;i++){
+        y+=(Math.random()-0.52)*12;
+        y=Math.max(H*0.1,Math.min(H*0.9,y));
+        points.push({x:(i/80)*W,y});
       }
-      for (let i = 0; i < 40; i++) {
-        const x = (i / 40) * width + width * 0.01;
-        const idx = Math.floor((i / 40) * 80);
-        const baseY = points[Math.min(idx, points.length - 1)].y;
-        const open = baseY + (Math.random() - 0.5) * 25;
-        const close = baseY + (Math.random() - 0.5) * 25;
-        const high = Math.min(open, close) - Math.random() * 15;
-        const low = Math.max(open, close) + Math.random() * 15;
-        candlesticks.push({ x, open, close, high, low, bullish: close < open, w: width / 40 * 0.45 });
+      for(let i=0;i<40;i++){
+        const x=(i/40)*W+W*0.01;
+        const idx=Math.floor((i/40)*80);
+        const baseY=points[Math.min(idx,points.length-1)].y;
+        const open=baseY+(Math.random()-0.5)*25;
+        const close=baseY+(Math.random()-0.5)*25;
+        const high=Math.min(open,close)-Math.random()*15;
+        const low=Math.max(open,close)+Math.random()*15;
+        candlesticks.push({x,open,close,high,low,bull:close<open,w:W/40*0.45});
       }
     }
-
-    let offset = 0;
-    function drawChart() {
-      ctx.clearRect(0, 0, width, height);
-      offset += 0.4;
-
-      candlesticks.forEach((c, i) => {
-        const shift = Math.sin((offset + i * 8) * 0.012) * 5;
-        const color = c.bullish ? '#00e676' : '#ff1744';
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(c.x, c.high + shift);
-        ctx.lineTo(c.x, c.low + shift);
-        ctx.stroke();
-        ctx.fillStyle = color;
-        const top = Math.min(c.open, c.close) + shift;
-        ctx.fillRect(c.x - c.w / 2, top, c.w, Math.max(Math.abs(c.close - c.open), 2));
+    function drawChart(){
+      ctx.clearRect(0,0,W,H);
+      offset+=0.4;
+      candlesticks.forEach((c,i)=>{
+        const shift=Math.sin((offset+i*8)*0.012)*5;
+        const color=c.bull?'#00D4FF':'#FF3B5C';
+        ctx.strokeStyle=color; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.moveTo(c.x,c.high+shift); ctx.lineTo(c.x,c.low+shift); ctx.stroke();
+        ctx.fillStyle=color;
+        ctx.fillRect(c.x-c.w/2,Math.min(c.open,c.close)+shift,c.w,Math.max(Math.abs(c.close-c.open),2));
       });
-
-      ctx.beginPath();
-      ctx.strokeStyle = '#00e676';
-      ctx.lineWidth = 1.8;
-      points.forEach((p, i) => {
-        const shift = Math.sin((offset + i * 4) * 0.018) * 6;
-        if (i === 0) ctx.moveTo(p.x, p.y + shift);
-        else ctx.lineTo(p.x, p.y + shift);
+      ctx.beginPath(); ctx.strokeStyle='#00D4FF'; ctx.lineWidth=2;
+      points.forEach((p,i)=>{
+        const shift=Math.sin((offset+i*4)*0.018)*6;
+        if(i===0)ctx.moveTo(p.x,p.y+shift); else ctx.lineTo(p.x,p.y+shift);
       });
       ctx.stroke();
-
-      ctx.lineTo(width, height);
-      ctx.lineTo(0, height);
-      ctx.closePath();
-      const grad = ctx.createLinearGradient(0, 0, 0, height);
-      grad.addColorStop(0, 'rgba(0, 230, 118, 0.1)');
-      grad.addColorStop(1, 'rgba(0, 230, 118, 0)');
-      ctx.fillStyle = grad;
-      ctx.fill();
-
+      ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath();
+      const g=ctx.createLinearGradient(0,0,0,H);
+      g.addColorStop(0,'rgba(0,212,255,0.08)'); g.addColorStop(1,'rgba(0,212,255,0)');
+      ctx.fillStyle=g; ctx.fill();
       requestAnimationFrame(drawChart);
     }
 
     // ── Mouse trail ──
-    const trailCanvas = document.getElementById('trailCanvas');
-    const tCtx = trailCanvas.getContext('2d');
-    let trails = [];
-
-    document.addEventListener('mousemove', (e) => {
-      trails.push({ x: e.clientX, y: e.clientY, life: 1 });
-      if (trails.length > 50) trails.shift();
+    let trails=[];
+    document.addEventListener('mousemove',e=>{
+      trails.push({x:e.clientX,y:e.clientY,life:1});
+      if(trails.length>50)trails.shift();
     });
-
-    function drawTrail() {
-      tCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-      trails = trails.filter(t => t.life > 0);
-      trails.forEach((t, i) => {
-        t.life -= 0.025;
+    function drawTrail(){
+      tCtx.clearRect(0,0,trailCanvas.width,trailCanvas.height);
+      trails=trails.filter(t=>t.life>0);
+      trails.forEach(t=>{
+        t.life-=0.025;
         tCtx.beginPath();
-        tCtx.arc(t.x, t.y, 2 * t.life, 0, Math.PI * 2);
-        tCtx.fillStyle = `rgba(0, 230, 118, ${t.life * 0.3})`;
+        tCtx.arc(t.x,t.y,2*t.life,0,Math.PI*2);
+        tCtx.fillStyle=`rgba(0,212,255,${t.life*0.25})`;
         tCtx.fill();
       });
       requestAnimationFrame(drawTrail);
     }
 
-    window.addEventListener('resize', resize);
-    resize();
-    drawChart();
-    drawTrail();
+    window.addEventListener('resize',resize);
+    resize(); drawChart(); drawTrail();
   </script>
-
 </body>
 </html>
