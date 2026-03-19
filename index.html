@@ -3,180 +3,153 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ownTRADE — Coming Soon</title>
-  <meta name="description" content="ownTRADE — Automated trading bots. Precision enters the market. Coming 2026.">
+  <title>ownTRADE — Automated Trading Intelligence</title>
+  <meta name="description" content="ownTRADE — The markets talk. Our bots listen. Scalping, Daytrading & Swing — all in one platform. Coming 2026.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
     :root {
-      --bg:        #080A0F;
-      --surface:   #121820;
-      --border:    #1E2736;
-      --cyan:      #00D4FF;
-      --cyan-dim:  rgba(0, 212, 255, 0.12);
-      --cyan-glow: rgba(0, 212, 255, 0.06);
-      --green:     #00E676;
-      --green-dim: rgba(0, 230, 118, 0.12);
-      --red:       #FF3B5C;
-      --red-dim:   rgba(255, 59, 92, 0.12);
-      --gold:      #FFB800;
-      --gold-dim:  rgba(255, 184, 0, 0.12);
-      --text:      #E8EAED;
-      --muted:     #6B7280;
-      --dim:       #2A3545;
+      --bg:         #07080a;
+      --bg2:        #0b0c0f;
+      --surface:    #0f1014;
+      --surface2:   #141519;
+      --border:     #1c1d22;
+      --border2:    #252629;
+
+      --gold-light: #f5d980;
+      --gold:       #c8922a;
+      --gold-dim:   #8a5f18;
+      --gold-mist:  rgba(200,146,42,0.08);
+      --gold-glow:  rgba(200,146,42,0.18);
+
+      --white:      #f0ede6;
+      --muted:      #6b6d76;
+      --dim:        #2e3038;
+
+      --green:      #2dcc7a;
+      --red:        #e8455a;
     }
 
     html { scroll-behavior: smooth; }
 
     body {
       background: var(--bg);
-      color: var(--text);
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--white);
+      font-family: 'Rajdhani', sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
       cursor: crosshair;
     }
 
-    /* ── Grid overlay ── */
+    /* ══════════════════════════════
+       NOISE TEXTURE OVERLAY
+    ══════════════════════════════ */
+    body::before {
+      content: '';
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px;
+      pointer-events: none; z-index: 999;
+    }
+
+    /* ══════════════════════════════
+       GRID OVERLAY
+    ══════════════════════════════ */
     .grid-overlay {
-      position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: 1; pointer-events: none;
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      z-index:1; pointer-events:none;
       background-image:
-        linear-gradient(rgba(0,212,255,0.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,212,255,0.018) 1px, transparent 1px);
-      background-size: 60px 60px;
-      animation: gridShift 25s linear infinite;
-    }
-    @keyframes gridShift {
-      0% { background-position: 0 0; }
-      100% { background-position: 60px 60px; }
+        linear-gradient(rgba(200,146,42,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200,146,42,0.022) 1px, transparent 1px);
+      background-size: 64px 64px;
     }
 
-    /* ── Scan lines ── */
+    /* ══════════════════════════════
+       SCANLINES
+    ══════════════════════════════ */
     .scanline {
-      position: fixed; left: 0;
-      width: 100%; height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(0,212,255,0.08), transparent);
-      z-index: 2; pointer-events: none;
+      position: fixed; left:0;
+      width:100%; height:1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(200,146,42,0.06) 50%, transparent 100%);
+      z-index:2; pointer-events:none;
     }
-    .scanline:nth-child(1) { animation: scanDown 7s linear infinite; }
-    .scanline:nth-child(2) { animation: scanDown 11s linear infinite 4s; opacity: 0.4; }
-    .scanline:nth-child(3) { animation: scanUp 9s linear infinite 2s; opacity: 0.25; }
-    @keyframes scanDown { 0% { top: -2px; } 100% { top: 100vh; } }
-    @keyframes scanUp   { 0% { top: 100vh; } 100% { top: -2px; } }
+    .scanline:nth-child(1) { animation: scanDown 9s linear infinite; }
+    .scanline:nth-child(2) { animation: scanDown 14s linear infinite 5s; opacity:0.4; }
+    .scanline:nth-child(3) { animation: scanUp  11s linear infinite 2s; opacity:0.25; }
+    @keyframes scanDown { 0%{top:-2px} 100%{top:100vh} }
+    @keyframes scanUp   { 0%{top:100vh} 100%{top:-2px} }
 
-    /* ── Glow orbs ── */
-    .glow-orb {
-      position: fixed; border-radius: 50%;
-      filter: blur(120px); pointer-events: none; z-index: 0;
+    /* ══════════════════════════════
+       GOLD GLOW ORBS
+    ══════════════════════════════ */
+    .orb {
+      position: fixed; border-radius:50%;
+      filter: blur(140px); pointer-events:none; z-index:0;
     }
-    .glow-orb.g1 {
-      width: 500px; height: 500px;
-      background: rgba(0,212,255,0.04);
-      top: 10%; left: -8%;
-      animation: orbit1 18s ease-in-out infinite;
-    }
-    .glow-orb.g2 {
-      width: 380px; height: 380px;
-      background: rgba(255,59,92,0.03);
-      bottom: 8%; right: -5%;
-      animation: orbit2 22s ease-in-out infinite;
-    }
-    .glow-orb.g3 {
-      width: 320px; height: 320px;
-      background: rgba(0,230,118,0.025);
-      top: 55%; left: 55%;
-      animation: orbit3 16s ease-in-out infinite;
-    }
-    .glow-orb.g4 {
-      width: 260px; height: 260px;
-      background: rgba(255,184,0,0.02);
-      top: 30%; right: 10%;
-      animation: orbit1 20s ease-in-out infinite 5s;
-    }
-    @keyframes orbit1 {
-      0%,100%{transform:translate(0,0) scale(1)} 25%{transform:translate(70px,-50px) scale(1.1)} 50%{transform:translate(30px,50px) scale(0.9)} 75%{transform:translate(-40px,20px) scale(1.05)}
-    }
-    @keyframes orbit2 {
-      0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-60px,-40px) scale(1.15)} 66%{transform:translate(30px,30px) scale(0.85)}
-    }
-    @keyframes orbit3 {
-      0%,100%{transform:translate(0,0)} 50%{transform:translate(-80px,-50px)}
-    }
+    .orb.o1 { width:600px; height:600px; background:rgba(200,146,42,0.05); top:-10%; left:-15%; animation:orbFloat1 20s ease-in-out infinite; }
+    .orb.o2 { width:400px; height:400px; background:rgba(200,146,42,0.04); bottom:5%;  right:-10%; animation:orbFloat2 24s ease-in-out infinite; }
+    .orb.o3 { width:300px; height:300px; background:rgba(200,146,42,0.03); top:40%;  left:50%;   animation:orbFloat3 18s ease-in-out infinite; }
+    @keyframes orbFloat1 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(60px,-40px)} 66%{transform:translate(-30px,50px)} }
+    @keyframes orbFloat2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-50px,-60px)} }
+    @keyframes orbFloat3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-70px,-40px)} }
 
-    /* ── Corner brackets ── */
-    .corner { position: fixed; width: 40px; height: 40px; z-index: 3; pointer-events: none; }
-    .corner::before, .corner::after { content:''; position:absolute; background:rgba(0,212,255,0.25); animation:cornerPulse 3s ease-in-out infinite; }
-    .corner.tl { top:24px; left:24px; }
+    /* ══════════════════════════════
+       CORNER BRACKETS
+    ══════════════════════════════ */
+    .corner { position:fixed; width:36px; height:36px; z-index:5; pointer-events:none; }
+    .corner::before, .corner::after { content:''; position:absolute; background:rgba(200,146,42,0.35); }
+    .corner.tl { top:20px; left:20px; }
     .corner.tl::before { width:100%; height:1px; top:0; left:0; }
     .corner.tl::after  { width:1px; height:100%; top:0; left:0; }
-    .corner.tr { top:24px; right:24px; }
+    .corner.tr { top:20px; right:20px; }
     .corner.tr::before { width:100%; height:1px; top:0; right:0; }
     .corner.tr::after  { width:1px; height:100%; top:0; right:0; }
-    .corner.bl { bottom:24px; left:24px; }
+    .corner.bl { bottom:20px; left:20px; }
     .corner.bl::before { width:100%; height:1px; bottom:0; left:0; }
     .corner.bl::after  { width:1px; height:100%; bottom:0; left:0; }
-    .corner.br { bottom:24px; right:24px; }
+    .corner.br { bottom:20px; right:20px; }
     .corner.br::before { width:100%; height:1px; bottom:0; right:0; }
     .corner.br::after  { width:1px; height:100%; bottom:0; right:0; }
-    @keyframes cornerPulse { 0%,100%{opacity:0.25} 50%{opacity:0.7} }
 
-    /* ── Ticker bar ── */
+    /* ══════════════════════════════
+       TICKER BAR
+    ══════════════════════════════ */
     .ticker-bar {
       position: fixed; top:0; left:0;
-      width:100%; height:32px;
-      background: rgba(0,212,255,0.025);
-      border-bottom: 1px solid rgba(0,212,255,0.06);
+      width:100%; height:28px;
+      background: rgba(7,8,10,0.92);
+      border-bottom: 1px solid rgba(200,146,42,0.1);
       z-index:20; overflow:hidden;
       display:flex; align-items:center;
+      backdrop-filter: blur(8px);
     }
     .ticker-track {
-      display:flex; gap:40px;
-      animation: tickerScroll 35s linear infinite;
+      display:flex; gap:36px; align-items:center;
+      animation: tickerScroll 38s linear infinite;
       white-space:nowrap;
-      font-family: 'Inter', sans-serif;
-      font-size:11px; letter-spacing:1px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size:10px; letter-spacing:0.5px;
     }
-    .ticker-track span { display:inline-flex; align-items:center; gap:6px; }
-    .ticker-track .up   { color:var(--cyan); opacity:0.5; }
-    .ticker-track .down { color:var(--red);  opacity:0.5; }
-    .ticker-track .dot  { color:var(--dim); }
+    .ticker-track .up   { color: var(--green); opacity:0.7; }
+    .ticker-track .down { color: var(--red);   opacity:0.7; }
+    .ticker-track .sep  { color: var(--dim); font-size:8px; }
     @keyframes tickerScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
 
-    /* ── Particles ── */
-    .particle {
-      position:fixed; width:2px; height:2px;
-      border-radius:50%; pointer-events:none; z-index:1;
-      opacity:0; animation:particleFloat linear infinite;
-    }
-    .particle:nth-child(1){left:8%;animation-duration:14s;animation-delay:0s;width:3px;height:3px;background:var(--cyan)}
-    .particle:nth-child(2){left:20%;animation-duration:18s;animation-delay:2s;background:var(--cyan)}
-    .particle:nth-child(3){left:35%;animation-duration:12s;animation-delay:5s;background:var(--green)}
-    .particle:nth-child(4){left:50%;animation-duration:16s;animation-delay:1s;width:3px;height:3px;background:var(--cyan)}
-    .particle:nth-child(5){left:65%;animation-duration:20s;animation-delay:4s;background:var(--gold)}
-    .particle:nth-child(6){left:75%;animation-duration:15s;animation-delay:7s;background:var(--red)}
-    .particle:nth-child(7){left:88%;animation-duration:17s;animation-delay:3s;width:3px;height:3px;background:var(--cyan)}
-    .particle:nth-child(8){left:95%;animation-duration:13s;animation-delay:6s;background:var(--green)}
-    @keyframes particleFloat {
-      0%{opacity:0;transform:translateY(100vh) scale(0)} 5%{opacity:0.4;transform:scale(1)} 95%{opacity:0.4} 100%{opacity:0;transform:translateY(-20vh) scale(0.5)}
-    }
-
-    /* ── Main canvas ── */
+    /* ══════════════════════════════
+       CANVAS
+    ══════════════════════════════ */
     #chartCanvas {
       position:fixed; bottom:0; left:0;
-      width:100%; height:45%;
-      z-index:0; pointer-events:none; opacity:0.07;
-      mask-image:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 100%);
-      -webkit-mask-image:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 100%);
+      width:100%; height:40%;
+      z-index:0; pointer-events:none;
+      opacity:0.055;
+      mask-image:linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 100%);
+      -webkit-mask-image:linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 100%);
     }
     #trailCanvas {
       position:fixed; top:0; left:0;
@@ -184,488 +157,548 @@
       z-index:4; pointer-events:none;
     }
 
-    /* ── Main container ── */
+    /* ══════════════════════════════
+       PARTICLES
+    ══════════════════════════════ */
+    .particle {
+      position:fixed; border-radius:50%;
+      pointer-events:none; z-index:1;
+      opacity:0; animation:ptFloat linear infinite;
+      background: var(--gold);
+    }
+    .particle:nth-child(1){left:6%;  width:2px;height:2px;animation-duration:16s;animation-delay:0s;}
+    .particle:nth-child(2){left:18%; width:1px;height:1px;animation-duration:20s;animation-delay:3s;}
+    .particle:nth-child(3){left:32%; width:2px;height:2px;animation-duration:13s;animation-delay:6s;}
+    .particle:nth-child(4){left:48%; width:1px;height:1px;animation-duration:18s;animation-delay:1s;}
+    .particle:nth-child(5){left:64%; width:2px;height:2px;animation-duration:22s;animation-delay:4s;}
+    .particle:nth-child(6){left:78%; width:1px;height:1px;animation-duration:15s;animation-delay:8s;}
+    .particle:nth-child(7){left:90%; width:2px;height:2px;animation-duration:19s;animation-delay:2s;}
+    @keyframes ptFloat {
+      0%  {opacity:0;transform:translateY(100vh) scale(0)}
+      5%  {opacity:0.35;transform:scale(1)}
+      95% {opacity:0.35}
+      100%{opacity:0;transform:translateY(-20vh) scale(0)}
+    }
+
+    /* ══════════════════════════════
+       MAIN WRAPPER
+    ══════════════════════════════ */
     .main {
       position:relative; z-index:10;
       display:flex; flex-direction:column;
       align-items:center; text-align:center;
-      padding:2rem 1.5rem;
-      max-width:900px; width:100%;
-      margin-top:32px;
+      padding: 80px 24px 60px;
+      max-width: 960px;
+      margin: 0 auto;
     }
 
-    /* ── Logo ── */
+    /* ══════════════════════════════
+       LOGO
+    ══════════════════════════════ */
     .logo-wrap {
-      margin-bottom:0.6rem;
-      animation:fadeInUp 1s ease-out 0.3s both;
+      margin-bottom: 0.5rem;
+      animation: revealUp 1.2s cubic-bezier(0.16,1,0.3,1) 0.2s both;
     }
     .logo {
-      font-family:'Plus Jakarta Sans',sans-serif;
-      font-size: clamp(3.2rem,9vw,6rem);
-      font-weight:800;
-      letter-spacing:-1px;
-      line-height:1;
+      font-family: 'Cinzel', serif;
+      font-size: clamp(3.5rem, 9vw, 6.5rem);
+      font-weight: 700;
+      letter-spacing: 4px;
+      line-height: 1;
     }
-    .logo .own   { color:var(--text); }
-    .logo .trade { color:var(--cyan); text-shadow:0 0 40px rgba(0,212,255,0.35); }
-
-    /* Glitch on hover */
-    .logo:hover .trade { animation:glitch 0.4s ease-in-out; }
-    @keyframes glitch {
-      0%{transform:translate(0)} 10%{transform:translate(-3px,2px);text-shadow:3px 0 var(--red),-3px 0 var(--green)}
-      20%{transform:translate(3px,-2px);text-shadow:-3px 0 var(--red),3px 0 var(--green)}
-      30%{transform:translate(-2px,1px)} 50%{transform:translate(0);text-shadow:0 0 40px rgba(0,212,255,0.35)} 100%{transform:translate(0);text-shadow:0 0 40px rgba(0,212,255,0.35)}
+    .logo .own   { color: var(--white); }
+    .logo .trade {
+      color: var(--gold-light);
+      background: linear-gradient(135deg, #f5d980 0%, #c8922a 50%, #f5d980 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 24px rgba(200,146,42,0.4));
+    }
+    .logo:hover .trade { animation: goldGlitch 0.45s ease-in-out; }
+    @keyframes goldGlitch {
+      0%,100%{ filter:drop-shadow(0 0 24px rgba(200,146,42,0.4)); }
+      15%{ transform:translateX(-3px); filter:drop-shadow(-4px 0 #c8922a) drop-shadow(4px 0 #8a5f18); }
+      30%{ transform:translateX(3px);  filter:drop-shadow(4px 0 #c8922a) drop-shadow(-4px 0 #8a5f18); }
+      50%{ transform:translateX(0); filter:drop-shadow(0 0 40px rgba(200,146,42,0.7)); }
     }
 
-    /* ── Subtitle ── */
+    /* ══════════════════════════════
+       SUBTITLE TYPING
+    ══════════════════════════════ */
     .subtitle {
-      font-family:'Inter',sans-serif;
-      font-size:clamp(0.6rem,1.8vw,0.8rem);
-      letter-spacing:7px; text-transform:uppercase;
-      color:var(--muted); margin-bottom:2.5rem;
-      animation:fadeInUp 1s ease-out 0.5s both;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(0.55rem, 1.4vw, 0.72rem);
+      letter-spacing: 5px; text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      animation: revealUp 1s ease-out 0.5s both;
+      min-height: 1.2em;
     }
-    .subtitle .cursor {
-      display:inline-block; width:2px; height:1em;
-      background:var(--cyan); margin-left:4px;
-      vertical-align:middle; animation:blink 0.8s step-end infinite;
+    .cursor {
+      display:inline-block; width:2px; height:0.9em;
+      background: var(--gold); margin-left:3px;
+      vertical-align: middle;
+      animation: blink 0.75s step-end infinite;
     }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-    /* ── Divider ── */
+    /* ══════════════════════════════
+       GOLD DIVIDER
+    ══════════════════════════════ */
     .divider {
-      width:0; height:1px;
-      background:linear-gradient(90deg,transparent,var(--cyan),transparent);
-      margin-bottom:2.5rem;
-      animation:fadeInUp 1s ease-out 0.6s both, expandLine 2s ease-out 1s both;
+      width: 1px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin-bottom: 2.8rem;
+      animation: revealUp 1s ease-out 0.6s both, expandW 2s ease-out 0.8s both;
     }
-    @keyframes expandLine { from{width:0} to{width:100px} }
+    @keyframes expandW { from{width:0} to{width:80px} }
 
-    /* ── Teaser ── */
-    .teaser { margin-bottom:1rem; animation:fadeInUp 1s ease-out 0.7s both; }
-    .teaser-line {
-      font-size:clamp(1rem,2.5vw,1.4rem);
-      font-weight:300; line-height:1.9;
-      color:var(--muted); opacity:0;
+    /* ══════════════════════════════
+       TAGLINE
+    ══════════════════════════════ */
+    .tagline {
+      margin-bottom: 1.2rem;
+      animation: revealUp 1s ease-out 0.7s both;
     }
-    .teaser-line.accent { font-weight:700; color:var(--cyan); text-shadow:0 0 20px rgba(0,212,255,0.2); }
-    .teaser-line.visible { animation:typeReveal 0.8s ease-out forwards; }
-    @keyframes typeReveal { 0%{opacity:0;transform:translateY(10px);filter:blur(4px)} 100%{opacity:1;transform:translateY(0);filter:blur(0)} }
+    .tagline-line {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(1rem, 2.2vw, 1.35rem);
+      font-weight: 300;
+      line-height: 2;
+      color: var(--muted);
+      opacity: 0;
+    }
+    .tagline-line.accent {
+      font-weight: 700;
+      background: linear-gradient(90deg, #f5d980, #c8922a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 12px rgba(200,146,42,0.3));
+    }
+    .tagline-line.visible { animation: lineReveal 0.9s cubic-bezier(0.16,1,0.3,1) forwards; }
+    @keyframes lineReveal {
+      0%{opacity:0;transform:translateY(12px);filter:blur(5px)}
+      100%{opacity:1;transform:translateY(0);filter:blur(0)}
+    }
 
-    /* ── Status ── */
+    /* ══════════════════════════════
+       STATUS DOT
+    ══════════════════════════════ */
     .status {
       display:flex; align-items:center; gap:10px;
-      margin:1.5rem 0;
-      font-family:'Inter',sans-serif; font-size:0.65rem;
-      letter-spacing:4px; color:var(--dim);
-      animation:fadeInUp 1s ease-out 0.8s both;
+      margin: 1.6rem 0 1rem;
+      font-family:'JetBrains Mono', monospace;
+      font-size:0.6rem; letter-spacing:4px;
+      color: var(--muted);
+      animation: revealUp 1s ease-out 0.8s both;
     }
     .status-dot {
-      width:8px; height:8px; border-radius:50%;
-      background:var(--cyan);
-      animation:statusPulse 2s ease-in-out infinite;
-      box-shadow:0 0 12px rgba(0,212,255,0.7);
+      width:7px; height:7px; border-radius:50%;
+      background: var(--gold);
+      box-shadow: 0 0 10px rgba(200,146,42,0.8);
+      animation: dotPulse 2.5s ease-in-out infinite;
     }
-    @keyframes statusPulse {
-      0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 12px rgba(0,212,255,0.7)}
-      50%{opacity:0.4;transform:scale(0.7);box-shadow:0 0 4px rgba(0,212,255,0.3)}
+    @keyframes dotPulse {
+      0%,100%{ box-shadow:0 0 10px rgba(200,146,42,0.8); transform:scale(1); }
+      50%{ box-shadow:0 0 3px rgba(200,146,42,0.3); transform:scale(0.75); }
     }
 
-    /* ── Year badge ── */
-    .badge-container {
-      display:flex; align-items:center; gap:16px;
-      margin:1.5rem 0;
-      animation:fadeInUp 1s ease-out 0.9s both;
+    /* ══════════════════════════════
+       YEAR BADGE
+    ══════════════════════════════ */
+    .badge-row {
+      display:flex; align-items:center; gap:18px;
+      margin: 0.8rem 0 2.2rem;
+      animation: revealUp 1s ease-out 0.9s both;
     }
-    .badge-line { width:50px; height:1px; background:rgba(0,212,255,0.3); animation:lineExpand 1.5s ease-out 1.5s both; }
-    @keyframes lineExpand { from{width:0;opacity:0} to{width:50px;opacity:1} }
+    .badge-line {
+      height:1px;
+      background: linear-gradient(90deg, transparent, rgba(200,146,42,0.4));
+      animation: lineGrow 1.5s ease-out 1.2s both;
+    }
+    .badge-line:last-child { background: linear-gradient(90deg, rgba(200,146,42,0.4), transparent); }
+    @keyframes lineGrow { from{width:0;opacity:0} to{width:52px;opacity:1} }
     .badge {
-      font-family:'Inter',sans-serif; font-size:clamp(1rem,2.5vw,1.4rem);
-      font-weight:700; letter-spacing:12px; color:var(--cyan);
-      text-shadow:0 0 20px rgba(0,212,255,0.4);
-      animation:badgePulse 4s ease-in-out infinite;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(1.1rem, 2.8vw, 1.5rem);
+      font-weight: 500;
+      letter-spacing: 14px;
+      background: linear-gradient(135deg, #f5d980 0%, #c8922a 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      animation: badgePulse 5s ease-in-out infinite;
     }
     @keyframes badgePulse {
-      0%,100%{text-shadow:0 0 20px rgba(0,212,255,0.4)} 50%{text-shadow:0 0 50px rgba(0,212,255,0.7),0 0 100px rgba(0,212,255,0.2)}
+      0%,100%{ filter:drop-shadow(0 0 8px rgba(200,146,42,0.3)); }
+      50%{ filter:drop-shadow(0 0 24px rgba(200,146,42,0.6)); }
     }
 
-    /* ══════════════════════════════════════════
-       TRADING MODES — animierte Icons
-    ══════════════════════════════════════════ */
+    /* ══════════════════════════════
+       MODE CARDS
+    ══════════════════════════════ */
     .modes {
       display:grid;
       grid-template-columns:repeat(3,1fr);
-      gap:16px;
-      width:100%;
-      margin:2rem 0;
-      animation:fadeInUp 1s ease-out 1s both;
+      gap:14px; width:100%;
+      margin:0 0 2rem;
+      animation: revealUp 1s ease-out 1s both;
     }
 
     .mode-card {
-      background:var(--surface);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:24px 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 26px 18px 22px;
       display:flex; flex-direction:column;
       align-items:center; gap:14px;
       position:relative; overflow:hidden;
-      transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
-      cursor:default;
+      transition: all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+      cursor: default;
     }
+
+    /* Top shimmer line */
     .mode-card::before {
       content:''; position:absolute;
-      top:0; left:0; right:0; height:2px;
-      border-radius:14px 14px 0 0;
+      top:0; left:0; right:0; height:1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity:0; transition: opacity 0.4s;
+    }
+    /* Inner glow */
+    .mode-card::after {
+      content:''; position:absolute;
+      inset:0; border-radius:10px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(200,146,42,0.06) 0%, transparent 65%);
       opacity:0; transition:opacity 0.4s;
     }
-    .mode-card:hover { transform:translateY(-6px); }
-    .mode-card:hover::before { opacity:1; }
 
-    .mode-card.scalping { --accent:var(--cyan); --accent-dim:var(--cyan-dim); }
-    .mode-card.daytrading { --accent:var(--gold); --accent-dim:var(--gold-dim); }
-    .mode-card.swing { --accent:var(--green); --accent-dim:var(--green-dim); }
-
-    .mode-card::before { background:var(--accent); }
-    .mode-card:hover { border-color:rgba(from var(--accent) r g b / 0.4); background:var(--accent-dim); box-shadow:0 12px 40px rgba(from var(--accent) r g b / 0.12); }
-
-    .mode-icon {
-      width:72px; height:56px;
-      position:relative; flex-shrink:0;
+    .mode-card:hover {
+      border-color: rgba(200,146,42,0.3);
+      transform: translateY(-5px);
+      box-shadow: 0 16px 48px rgba(200,146,42,0.1), 0 0 0 1px rgba(200,146,42,0.05);
     }
+    .mode-card:hover::before { opacity:1; }
+    .mode-card:hover::after  { opacity:1; }
+
+    .mode-icon { width:72px; height:54px; position:relative; flex-shrink:0; }
 
     .mode-label {
-      font-family:'Inter',sans-serif;
-      font-size:0.6rem; font-weight:600;
-      letter-spacing:4px; text-transform:uppercase;
-      color:var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem; font-weight:500;
+      letter-spacing: 4px; text-transform:uppercase;
+      background: linear-gradient(90deg, #f5d980, #c8922a);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
     }
     .mode-name {
-      font-family:'Plus Jakarta Sans',sans-serif;
-      font-size:1rem; font-weight:700;
-      color:var(--text); letter-spacing:-0.3px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.9rem; font-weight:600;
+      color: var(--white); letter-spacing:1px;
     }
     .mode-desc {
-      font-family:'Inter',sans-serif;
-      font-size:0.7rem; color:var(--muted);
-      line-height:1.5;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.72rem; color: var(--muted);
+      line-height:1.6; font-weight:400;
     }
-    .mode-text { display:flex; flex-direction:column; gap:4px; align-items:center; }
+    .mode-text { display:flex; flex-direction:column; gap:5px; align-items:center; }
 
-    /* ── SCALPING ICON — EKG Herzschlag mit Blitz ── */
-    .ekg-svg { width:72px; height:56px; }
+    /* ── SCALPING: EKG ── */
+    .ekg-svg { width:72px; height:54px; }
     .ekg-line {
-      stroke: #00D4FF;
-      stroke-width: 2.5;
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      filter: drop-shadow(0 0 6px rgba(0,212,255,0.8));
-      stroke-dasharray: 200;
-      stroke-dashoffset: 200;
-      animation: ekgDraw 1.5s ease-out 1.2s forwards, ekgPulse 2.5s ease-in-out 2.7s infinite;
+      stroke: url(#ekgGold); stroke-width:2.5; fill:none;
+      stroke-linecap:round; stroke-linejoin:round;
+      filter: drop-shadow(0 0 5px rgba(200,146,42,0.7));
+      stroke-dasharray: 220; stroke-dashoffset: 220;
+      animation: ekgDraw 1.4s ease-out 1.2s forwards, ekgPulse 3s ease-in-out 2.8s infinite;
     }
     .ekg-bolt {
-      fill: #00D4FF;
-      filter: drop-shadow(0 0 8px rgba(0,212,255,0.9));
-      animation: boltFlash 2.5s ease-in-out 2.7s infinite;
-      opacity: 0;
+      fill: var(--gold-light); opacity:0;
+      filter:drop-shadow(0 0 8px rgba(245,217,128,0.9));
+      animation: boltFlash 3s ease-in-out 2.8s infinite;
     }
-    @keyframes ekgDraw {
-      to { stroke-dashoffset: 0; }
-    }
+    @keyframes ekgDraw { to{stroke-dashoffset:0} }
     @keyframes ekgPulse {
-      0%,100%  { stroke-dashoffset:0; filter:drop-shadow(0 0 6px rgba(0,212,255,0.8)); }
-      40%,60%  { filter:drop-shadow(0 0 14px rgba(0,212,255,1)); }
+      0%,100%{ filter:drop-shadow(0 0 5px rgba(200,146,42,0.7)); }
+      40%,60%{ filter:drop-shadow(0 0 12px rgba(245,217,128,1)); }
     }
     @keyframes boltFlash {
-      0%,30%   { opacity:0; transform:scale(0.8); }
-      35%,55%  { opacity:1; transform:scale(1); filter:drop-shadow(0 0 12px rgba(0,212,255,1)); }
-      70%,100% { opacity:0; }
-    }
-    .mode-card.scalping:hover .ekg-line {
-      animation: ekgPulse 0.8s ease-in-out infinite;
+      0%,30%{opacity:0;transform:scale(0.8)}
+      38%,52%{opacity:1;transform:scale(1)}
+      70%,100%{opacity:0}
     }
 
-    /* ── DAYTRADING ICON — Kerzen-Chart aufbauend ── */
-    .candle-svg { width:72px; height:56px; }
-    .candle-wick {
-      stroke: #FFB800; stroke-width:1.5; stroke-linecap:round;
-      filter: drop-shadow(0 0 4px rgba(255,184,0,0.6));
-    }
-    .candle-body {
-      rx: 2;
-      filter: drop-shadow(0 0 5px rgba(255,184,0,0.5));
-      transform-origin: bottom center;
-      transform: scaleY(0);
-    }
-    .candle-body.bull { fill:#FFB800; }
-    .candle-body.bear { fill:#FF3B5C; }
+    /* ── DAYTRADING: Candles ── */
+    .candle-svg { width:72px; height:54px; }
+    .c-wick { stroke:var(--gold); stroke-width:1.5; stroke-linecap:round; opacity:0; }
+    .c-body { rx:1.5; transform-origin:bottom center; transform:scaleY(0); }
+    .c-body.bull { fill:var(--gold-light); filter:drop-shadow(0 0 4px rgba(245,217,128,0.5)); }
+    .c-body.bear { fill:var(--gold-dim);   filter:drop-shadow(0 0 4px rgba(138,95,24,0.5)); }
+    .c-body:nth-of-type(1){animation:cGrow .35s ease-out 1.3s forwards}
+    .c-body:nth-of-type(2){animation:cGrow .35s ease-out 1.6s forwards}
+    .c-body:nth-of-type(3){animation:cGrow .35s ease-out 1.9s forwards}
+    .c-body:nth-of-type(4){animation:cGrow .35s ease-out 2.2s forwards}
+    .c-body:nth-of-type(5){animation:cGrow .35s ease-out 2.5s forwards}
+    .c-wick:nth-of-type(6){animation:cFade .3s ease-out 1.3s forwards}
+    .c-wick:nth-of-type(7){animation:cFade .3s ease-out 1.6s forwards}
+    .c-wick:nth-of-type(8){animation:cFade .3s ease-out 1.9s forwards}
+    .c-wick:nth-of-type(9){animation:cFade .3s ease-out 2.2s forwards}
+    .c-wick:nth-of-type(10){animation:cFade .3s ease-out 2.5s forwards}
+    @keyframes cGrow { from{transform:scaleY(0)} to{transform:scaleY(1)} }
+    @keyframes cFade { from{opacity:0} to{opacity:0.8} }
 
-    .candle-body:nth-child(1)  { animation: candleGrow 0.4s ease-out 1.3s forwards; }
-    .candle-body:nth-child(2)  { animation: candleGrow 0.4s ease-out 1.6s forwards; }
-    .candle-body:nth-child(3)  { animation: candleGrow 0.4s ease-out 1.9s forwards; }
-    .candle-body:nth-child(4)  { animation: candleGrow 0.4s ease-out 2.2s forwards; }
-    .candle-body:nth-child(5)  { animation: candleGrow 0.4s ease-out 2.5s forwards; }
-
-    .candle-wick { opacity:0; }
-    .candle-wick:nth-child(6)  { animation: wickFade 0.3s ease-out 1.3s forwards; }
-    .candle-wick:nth-child(7)  { animation: wickFade 0.3s ease-out 1.6s forwards; }
-    .candle-wick:nth-child(8)  { animation: wickFade 0.3s ease-out 1.9s forwards; }
-    .candle-wick:nth-child(9)  { animation: wickFade 0.3s ease-out 2.2s forwards; }
-    .candle-wick:nth-child(10) { animation: wickFade 0.3s ease-out 2.5s forwards; }
-
-    @keyframes candleGrow { from{transform:scaleY(0)} to{transform:scaleY(1)} }
-    @keyframes wickFade   { from{opacity:0} to{opacity:1} }
-
-    .candle-glow {
-      fill: none; stroke:#FFB800; stroke-width:0.5;
-      opacity:0; rx:3;
-      animation: candleGlowPulse 2s ease-in-out 3s infinite;
+    /* ── SWING: Mountain ── */
+    .mtn-svg { width:72px; height:54px; }
+    .mtn-area {
+      fill:url(#mtnGrad); opacity:0;
+      animation:mtnFade .8s ease-out 3s forwards;
     }
-    @keyframes candleGlowPulse {
-      0%,100%{opacity:0;stroke-width:0.5} 50%{opacity:0.4;stroke-width:2;filter:drop-shadow(0 0 8px rgba(255,184,0,0.6))}
-    }
-
-    /* ── SWING ICON — Berg mit Trail + Glow ── */
-    .mountain-svg { width:72px; height:56px; }
-    .mountain-fill {
-      fill:none; stroke:none;
-      animation:mountainReveal 1.5s ease-out 1.2s forwards;
-    }
-    .mountain-stroke {
-      stroke: #00E676; stroke-width:2.5; fill:none;
+    .mtn-stroke {
+      stroke:url(#ekgGold); stroke-width:2.5; fill:none;
       stroke-linecap:round; stroke-linejoin:round;
-      filter:drop-shadow(0 0 8px rgba(0,230,118,0.7));
-      stroke-dasharray:300; stroke-dashoffset:300;
-      animation:mountainDraw 1.8s ease-out 1.2s forwards;
+      filter:drop-shadow(0 0 7px rgba(200,146,42,0.7));
+      stroke-dasharray:280; stroke-dashoffset:280;
+      animation:mtnDraw 1.8s ease-out 1.2s forwards;
     }
-    .mountain-peak-glow {
-      fill:#00E676; opacity:0;
-      animation:peakGlow 2.5s ease-in-out 3s infinite;
-      filter:drop-shadow(0 0 12px rgba(0,230,118,1));
+    .mtn-peak {
+      fill:var(--gold-light); opacity:0;
+      filter:drop-shadow(0 0 10px rgba(245,217,128,1));
+      animation:peakGlow 3s ease-in-out 3.2s infinite;
     }
-    .mountain-trail {
-      stroke:#00E676; stroke-width:1; fill:none;
-      opacity:0; stroke-dasharray:4 4;
-      animation:trailFade 2s ease-in-out 3.2s infinite;
-    }
-    .mountain-area {
-      fill:url(#mountainGrad);
-      opacity:0;
-      animation:areaFade 0.8s ease-out 3s forwards;
-    }
-    @keyframes mountainDraw { to{stroke-dashoffset:0} }
+    @keyframes mtnDraw { to{stroke-dashoffset:0} }
+    @keyframes mtnFade { to{opacity:1} }
     @keyframes peakGlow {
-      0%,100%{opacity:0;transform:scale(1)} 40%,60%{opacity:1;transform:scale(1.5)}
+      0%,100%{opacity:0;transform:scale(1)}
+      40%,60%{opacity:1;transform:scale(1.4)}
     }
-    @keyframes trailFade {
-      0%,100%{opacity:0} 30%,70%{opacity:0.5}
-    }
-    @keyframes areaFade { to{opacity:1} }
 
-    /* ── Tags ── */
+    /* ══════════════════════════════
+       TAGS
+    ══════════════════════════════ */
     .tags {
-      display:flex; gap:10px; flex-wrap:wrap;
-      justify-content:center; margin-bottom:2.5rem;
+      display:flex; gap:8px; flex-wrap:wrap;
+      justify-content:center;
+      margin-bottom: 2.6rem;
     }
     .tag {
-      font-family:'Inter',sans-serif;
-      font-size:0.62rem; letter-spacing:2.5px; text-transform:uppercase;
-      color:var(--dim); padding:7px 16px;
-      border:1px solid rgba(0,212,255,0.08); border-radius:20px;
-      transition:all 0.4s ease; opacity:0;
-      animation:tagPop 0.5s ease-out forwards;
+      font-family:'JetBrains Mono', monospace;
+      font-size:0.6rem; letter-spacing:2.5px; text-transform:uppercase;
+      color: var(--muted);
+      padding: 7px 15px;
+      border: 1px solid var(--border2);
+      border-radius: 3px;
+      opacity:0;
+      animation: tagPop 0.45s ease-out forwards;
+      transition: all 0.35s ease;
+      background: var(--surface);
     }
-    .tag:nth-child(1){animation-delay:1.4s} .tag:nth-child(2){animation-delay:1.6s}
-    .tag:nth-child(3){animation-delay:1.8s} .tag:nth-child(4){animation-delay:2s}
-    @keyframes tagPop { 0%{opacity:0;transform:scale(0.8) translateY(10px)} 100%{opacity:1;transform:scale(1) translateY(0)} }
-    .tag:hover { border-color:rgba(0,212,255,0.4); color:var(--cyan); background:var(--cyan-dim); transform:translateY(-3px); box-shadow:0 4px 20px rgba(0,212,255,0.1); }
+    .tag:nth-child(1){animation-delay:1.5s} .tag:nth-child(2){animation-delay:1.7s}
+    .tag:nth-child(3){animation-delay:1.9s} .tag:nth-child(4){animation-delay:2.1s}
+    @keyframes tagPop { 0%{opacity:0;transform:translateY(8px)} 100%{opacity:1;transform:translateY(0)} }
+    .tag:hover {
+      border-color: rgba(200,146,42,0.4);
+      color: var(--gold-light);
+      background: var(--gold-mist);
+      transform: translateY(-2px);
+    }
 
-    /* ── Links ── */
+    /* ══════════════════════════════
+       LINKS
+    ══════════════════════════════ */
     .links {
-      display:flex; gap:20px; align-items:center;
+      display:flex; gap:16px; align-items:center;
       flex-wrap:wrap; justify-content:center;
-      animation:fadeInUp 1s ease-out 2.2s both;
+      animation: revealUp 1s ease-out 2.2s both;
     }
     .link-btn {
-      display:flex; align-items:center; gap:10px;
+      display:flex; align-items:center; gap:9px;
       text-decoration:none;
-      font-family:'Inter',sans-serif; font-size:0.78rem;
-      letter-spacing:1.5px; color:var(--muted);
-      padding:13px 26px;
-      border:1px solid rgba(0,212,255,0.1); border-radius:8px;
-      transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+      font-family:'Rajdhani', sans-serif;
+      font-size:0.8rem; font-weight:600; letter-spacing:2px;
+      color: var(--muted);
+      padding: 12px 24px;
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      background: var(--surface);
+      transition: all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
       position:relative; overflow:hidden;
     }
     .link-btn::before {
       content:''; position:absolute;
       top:0; left:-200%; width:200%; height:100%;
-      background:linear-gradient(90deg,transparent,rgba(0,212,255,0.06),transparent);
-      animation:shimmer 3.5s ease-in-out infinite;
+      background:linear-gradient(90deg,transparent,rgba(200,146,42,0.07),transparent);
+      animation: shimmer 4s ease-in-out infinite;
     }
     @keyframes shimmer { 0%{left:-200%} 100%{left:200%} }
-    .link-btn:hover { border-color:rgba(0,212,255,0.5); color:var(--cyan); box-shadow:0 0 30px rgba(0,212,255,0.1); transform:translateY(-3px); }
-    .link-btn svg { width:18px; height:18px; fill:currentColor; flex-shrink:0; transition:transform 0.3s; }
-    .link-btn:hover svg { transform:scale(1.2); }
-    .link-separator { width:4px; height:4px; border-radius:50%; background:var(--dim); animation:dotPulse 2s ease-in-out infinite; }
-    @keyframes dotPulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+    .link-btn:hover {
+      border-color: rgba(200,146,42,0.45);
+      color: var(--gold-light);
+      background: var(--gold-mist);
+      box-shadow: 0 0 28px rgba(200,146,42,0.1);
+      transform: translateY(-3px);
+    }
+    .link-btn svg { width:16px; height:16px; fill:currentColor; flex-shrink:0; }
+    .link-sep {
+      width:4px; height:4px; border-radius:50%;
+      background: var(--dim);
+    }
 
-    /* ── Footer ── */
+    /* ══════════════════════════════
+       FOOTER
+    ══════════════════════════════ */
     .footer {
-      position:fixed; bottom:24px; z-index:10;
-      font-family:'Inter',sans-serif; font-size:0.58rem;
-      letter-spacing:3px; color:var(--dim);
-      animation:fadeInUp 1s ease-out 2.4s both;
+      position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+      z-index:10;
+      font-family:'JetBrains Mono', monospace;
+      font-size:0.55rem; letter-spacing:4px;
+      color: var(--dim);
+      animation: revealUp 1s ease-out 2.5s both;
     }
 
-    @keyframes fadeInUp { from{opacity:0;transform:translateY(25px)} to{opacity:1;transform:translateY(0)} }
+    /* ══════════════════════════════
+       SHARED ANIMATION
+    ══════════════════════════════ */
+    @keyframes revealUp {
+      from{opacity:0;transform:translateY(22px)}
+      to{opacity:1;transform:translateY(0)}
+    }
 
-    /* ── Responsive ── */
+    /* ══════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════ */
     @media(max-width:640px) {
-      .modes { grid-template-columns:1fr; gap:12px; }
-      .links { flex-direction:column; gap:12px; }
-      .link-separator { display:none; }
-      .badge { letter-spacing:6px; }
-    }
-    @media(max-width:480px) {
-      .tags { gap:6px; }
-      .tag { font-size:0.55rem; padding:5px 10px; }
+      .modes { grid-template-columns:1fr; }
+      .links { flex-direction:column; }
+      .link-sep { display:none; }
     }
   </style>
 </head>
 <body>
 
+  <!-- BG layers -->
   <div class="grid-overlay"></div>
   <div class="scanline"></div>
   <div class="scanline"></div>
   <div class="scanline"></div>
-  <div class="glow-orb g1"></div>
-  <div class="glow-orb g2"></div>
-  <div class="glow-orb g3"></div>
-  <div class="glow-orb g4"></div>
+  <div class="orb o1"></div>
+  <div class="orb o2"></div>
+  <div class="orb o3"></div>
   <div class="corner tl"></div>
   <div class="corner tr"></div>
   <div class="corner bl"></div>
   <div class="corner br"></div>
-
-  <div class="particle"></div>
-  <div class="particle"></div>
-  <div class="particle"></div>
-  <div class="particle"></div>
-  <div class="particle"></div>
-  <div class="particle"></div>
-  <div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div>
   <div class="particle"></div>
 
+  <!-- Ticker -->
   <div class="ticker-bar"><div class="ticker-track" id="ticker"></div></div>
 
   <canvas id="chartCanvas"></canvas>
   <canvas id="trailCanvas"></canvas>
 
+  <!-- ═══════════════ MAIN ═══════════════ -->
   <main class="main">
 
+    <!-- Logo -->
     <div class="logo-wrap">
-      <h1 class="logo"><span class="own">own</span><span class="trade">TRADE</span></h1>
+      <h1 class="logo">
+        <span class="own">own</span><span class="trade">TRADE</span>
+      </h1>
     </div>
 
+    <!-- Typed subtitle -->
     <p class="subtitle">
       <span id="typedText"></span><span class="cursor"></span>
     </p>
 
     <div class="divider"></div>
 
-    <div class="teaser">
-      <p class="teaser-line" id="teaser1">The markets talk.</p>
-      <p class="teaser-line accent" id="teaser2">Our bots listen.</p>
+    <!-- Tagline -->
+    <div class="tagline">
+      <p class="tagline-line" id="tl1">The markets talk.</p>
+      <p class="tagline-line accent" id="tl2">Our bots listen.</p>
     </div>
 
+    <!-- Status -->
     <div class="status">
       <div class="status-dot"></div>
       <span>SYSTEMS ONLINE</span>
     </div>
 
-    <div class="badge-container">
+    <!-- Year badge -->
+    <div class="badge-row">
       <div class="badge-line"></div>
       <span class="badge">2026</span>
       <div class="badge-line"></div>
     </div>
 
-    <!-- ══ TRADING MODES ══ -->
+    <!-- ═══ TRADING MODES ═══ -->
     <div class="modes">
 
       <!-- SCALPING -->
-      <div class="mode-card scalping">
+      <div class="mode-card">
         <div class="mode-icon">
-          <svg class="ekg-svg" viewBox="0 0 72 56">
-            <!-- EKG Linie -->
-            <polyline class="ekg-line" points="0,32 12,32 16,20 20,44 26,8 30,44 34,28 38,32 52,32 56,32 60,32 72,32"/>
-            <!-- Blitz Icon bei Peak -->
+          <svg class="ekg-svg" viewBox="0 0 72 54">
+            <defs>
+              <linearGradient id="ekgGold" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%"   stop-color="#8a5f18"/>
+                <stop offset="45%"  stop-color="#f5d980"/>
+                <stop offset="100%" stop-color="#c8922a"/>
+              </linearGradient>
+            </defs>
+            <polyline class="ekg-line"
+              points="0,30 10,30 15,20 20,42 26,8 31,42 36,26 40,30 54,30 72,30"/>
             <polygon class="ekg-bolt" points="28,4 23,18 27,18 22,30 30,14 26,14"/>
           </svg>
         </div>
         <div class="mode-text">
           <span class="mode-label">Scalping</span>
           <span class="mode-name">Lightning Fast</span>
-          <span class="mode-desc">5m · High Frequency<br>Multiple Trades/Day</span>
+          <span class="mode-desc">5m · High Frequency<br>Multiple Trades / Day</span>
         </div>
       </div>
 
       <!-- DAYTRADING -->
-      <div class="mode-card daytrading">
+      <div class="mode-card">
         <div class="mode-icon">
-          <svg class="candle-svg" viewBox="0 0 72 56">
-            <defs>
-              <filter id="goldGlow">
-                <feGaussianBlur stdDeviation="2" result="blur"/>
-                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-              </filter>
-            </defs>
-            <!-- Candle bodies (scaleY from bottom) -->
-            <rect class="candle-body bull" x="6"  y="28" width="8" height="20" transform-origin="10 48"/>
-            <rect class="candle-body bear" x="20" y="20" width="8" height="28" transform-origin="24 48" fill="#FF3B5C"/>
-            <rect class="candle-body bull" x="34" y="16" width="8" height="32" transform-origin="38 48"/>
-            <rect class="candle-body bear" x="48" y="22" width="8" height="26" transform-origin="52 48" fill="#FF3B5C"/>
-            <rect class="candle-body bull" x="62" y="12" width="8" height="36" transform-origin="66 48"/>
-            <!-- Wicks -->
-            <line class="candle-wick" x1="10" y1="24" x2="10" y2="28"/>
-            <line class="candle-wick" x1="10" y1="48" x2="10" y2="51"/>
-            <line class="candle-wick" x1="24" y1="16" x2="24" y2="20"/>
-            <line class="candle-wick" x1="24" y1="48" x2="24" y2="52"/>
-            <line class="candle-wick" x1="38" y1="10" x2="38" y2="16"/>
-            <line class="candle-wick" x1="38" y1="48" x2="38" y2="52"/>
-            <line class="candle-wick" x1="52" y1="17" x2="52" y2="22"/>
-            <line class="candle-wick" x1="52" y1="48" x2="52" y2="51"/>
-            <line class="candle-wick" x1="66" y1="6"  x2="66" y2="12"/>
-            <line class="candle-wick" x1="66" y1="48" x2="66" y2="52"/>
-            <!-- Glow outline -->
-            <rect class="candle-glow" x="4" y="4" width="64" height="50"/>
+          <svg class="candle-svg" viewBox="0 0 72 54">
+            <rect class="c-body bull" x="6"  y="28" width="8" height="20" transform-origin="10 48"/>
+            <rect class="c-body bear" x="20" y="20" width="8" height="28" transform-origin="24 48"/>
+            <rect class="c-body bull" x="34" y="15" width="8" height="33" transform-origin="38 48"/>
+            <rect class="c-body bear" x="48" y="22" width="8" height="26" transform-origin="52 48"/>
+            <rect class="c-body bull" x="62" y="10" width="8" height="38" transform-origin="66 48"/>
+            <line class="c-wick" x1="10" y1="23" x2="10" y2="28"/>
+            <line class="c-wick" x1="10" y1="48" x2="10" y2="52"/>
+            <line class="c-wick" x1="24" y1="15" x2="24" y2="20"/>
+            <line class="c-wick" x1="24" y1="48" x2="24" y2="52"/>
+            <line class="c-wick" x1="38" y1="9"  x2="38" y2="15"/>
+            <line class="c-wick" x1="38" y1="48" x2="38" y2="52"/>
+            <line class="c-wick" x1="52" y1="16" x2="52" y2="22"/>
+            <line class="c-wick" x1="52" y1="48" x2="52" y2="52"/>
+            <line class="c-wick" x1="66" y1="4"  x2="66" y2="10"/>
+            <line class="c-wick" x1="66" y1="48" x2="66" y2="52"/>
           </svg>
         </div>
         <div class="mode-text">
           <span class="mode-label">Daytrading</span>
-          <span class="mode-name">Precision Entries</span>
+          <span class="mode-name">Precision Entry</span>
           <span class="mode-desc">15m–1h · 2–5 Trades<br>Session-Based</span>
         </div>
       </div>
 
       <!-- SWING -->
-      <div class="mode-card swing">
+      <div class="mode-card">
         <div class="mode-icon">
-          <svg class="mountain-svg" viewBox="0 0 72 56">
+          <svg class="mtn-svg" viewBox="0 0 72 54">
             <defs>
-              <linearGradient id="mountainGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#00E676" stop-opacity="0.3"/>
-                <stop offset="100%" stop-color="#00E676" stop-opacity="0"/>
+              <linearGradient id="mtnGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stop-color="#c8922a" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#c8922a" stop-opacity="0"/>
               </linearGradient>
             </defs>
-            <!-- Mountain filled area -->
-            <polygon class="mountain-area" points="0,54 18,38 28,44 40,12 52,36 64,28 72,32 72,54"/>
-            <!-- Mountain outline stroke -->
-            <polyline class="mountain-stroke" points="0,54 18,38 28,44 40,12 52,36 64,28 72,32"/>
-            <!-- Peak glow dot -->
-            <circle class="mountain-peak-glow" cx="40" cy="12" r="3"/>
-            <!-- Trailing dashed line (uptrend indicator) -->
-            <line class="mountain-trail" x1="0" y1="54" x2="72" y2="10"/>
+            <polygon class="mtn-area" points="0,52 16,36 26,42 38,10 50,34 62,26 72,30 72,52"/>
+            <polyline class="mtn-stroke" points="0,52 16,36 26,42 38,10 50,34 62,26 72,30"/>
+            <circle class="mtn-peak" cx="38" cy="10" r="2.8"/>
           </svg>
         </div>
         <div class="mode-text">
@@ -676,8 +709,8 @@
       </div>
 
     </div>
-    <!-- ══ END MODES ══ -->
 
+    <!-- Tags -->
     <div class="tags">
       <span class="tag">Long Positions</span>
       <span class="tag">Short Positions</span>
@@ -685,12 +718,13 @@
       <span class="tag">24/7 Automated</span>
     </div>
 
+    <!-- Links -->
     <div class="links">
       <a href="https://x.com/OTrade666" target="_blank" rel="noopener" class="link-btn">
         <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
         @OTrade666
       </a>
-      <div class="link-separator"></div>
+      <div class="link-sep"></div>
       <a href="mailto:contact@owntrade.org" class="link-btn">
         <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
         contact@owntrade.org
@@ -699,120 +733,129 @@
 
   </main>
 
-  <div class="footer">© 2026 OWNTRADE</div>
+  <div class="footer">© 2026 OWNTRADE · ALL RIGHTS RESERVED</div>
 
+  <!-- ═══ SCRIPTS ═══ -->
   <script>
-    // ── Typing effect ──
-    const phrases = ['AUTOMATED TRADING BOTS','PRECISION ENTERS THE MARKET','24/7 · LONG · SHORT · SCALPING','NO SLEEP · NO EMOTIONS · NO MERCY'];
-    let phraseIdx=0,charIdx=0,deleting=false;
-    const typedEl=document.getElementById('typedText');
-    function typeLoop(){
-      const cur=phrases[phraseIdx];
-      if(!deleting){
-        typedEl.textContent=cur.substring(0,charIdx+1); charIdx++;
-        if(charIdx===cur.length){setTimeout(()=>{deleting=true;typeLoop()},2500);return;}
-        setTimeout(typeLoop,75);
-      } else {
-        typedEl.textContent=cur.substring(0,charIdx-1); charIdx--;
-        if(charIdx===0){deleting=false;phraseIdx=(phraseIdx+1)%phrases.length;setTimeout(typeLoop,400);return;}
-        setTimeout(typeLoop,35);
-      }
+  // ── Typing Effect ──
+  const phrases = [
+    'AUTOMATED TRADING INTELLIGENCE',
+    'PRECISION ENTERS THE MARKET',
+    '24/7 · SCALPING · DAYTRADING · SWING',
+    'NO SLEEP · NO EMOTIONS · NO MERCY'
+  ];
+  let pIdx=0,cIdx=0,del=false;
+  const typedEl = document.getElementById('typedText');
+  function typeLoop(){
+    const cur = phrases[pIdx];
+    if(!del){
+      typedEl.textContent = cur.substring(0,cIdx+1); cIdx++;
+      if(cIdx===cur.length){ setTimeout(()=>{del=true;typeLoop()},2800); return; }
+      setTimeout(typeLoop,70);
+    } else {
+      typedEl.textContent = cur.substring(0,cIdx-1); cIdx--;
+      if(cIdx===0){ del=false; pIdx=(pIdx+1)%phrases.length; setTimeout(typeLoop,450); return; }
+      setTimeout(typeLoop,32);
     }
-    setTimeout(typeLoop,1200);
+  }
+  setTimeout(typeLoop,1000);
 
-    // ── Teaser reveal ──
-    setTimeout(()=>document.getElementById('teaser1').classList.add('visible'),1800);
-    setTimeout(()=>document.getElementById('teaser2').classList.add('visible'),2600);
+  // ── Tagline reveal ──
+  setTimeout(()=>document.getElementById('tl1').classList.add('visible'),1600);
+  setTimeout(()=>document.getElementById('tl2').classList.add('visible'),2400);
 
-    // ── Ticker ──
-    const tickerData=[
-      {sym:'BTC/USDT',val:'+2.41%',up:true},{sym:'ETH/USDT',val:'-0.83%',up:false},
-      {sym:'SOL/USDT',val:'+5.12%',up:true},{sym:'BNB/USDT',val:'+1.24%',up:true},
-      {sym:'AAPL',val:'+1.18%',up:true},{sym:'TSLA',val:'-3.07%',up:false},
-      {sym:'NVDA',val:'+4.72%',up:true},{sym:'EUR/USD',val:'+0.31%',up:true},
-      {sym:'XAU/USD',val:'+0.89%',up:true},{sym:'GBP/USD',val:'-0.22%',up:false},
-    ];
-    const tickerEl=document.getElementById('ticker');
-    let html='';
-    for(let i=0;i<3;i++) tickerData.forEach(t=>{html+=`<span class="${t.up?'up':'down'}">${t.sym} ${t.val}</span><span class="dot">·</span>`;});
-    tickerEl.innerHTML=html;
+  // ── Ticker ──
+  const tickerData=[
+    {s:'BTC/USDT',v:'+2.41%',up:true},{s:'ETH/USDT',v:'-0.83%',up:false},
+    {s:'SOL/USDT',v:'+5.12%',up:true},{s:'BNB/USDT',v:'+1.24%',up:true},
+    {s:'AAPL',v:'+1.18%',up:true},{s:'TSLA',v:'-3.07%',up:false},
+    {s:'NVDA',v:'+4.72%',up:true},{s:'EUR/USD',v:'+0.31%',up:true},
+    {s:'XAU/USD',v:'+0.89%',up:true},{s:'GBP/USD',v:'-0.22%',up:false},
+  ];
+  const tickEl = document.getElementById('ticker');
+  let html='';
+  for(let i=0;i<3;i++) tickerData.forEach(t=>{
+    html+=`<span class="${t.up?'up':'down'}">${t.s}&nbsp;&nbsp;${t.v}</span><span class="sep">·</span>`;
+  });
+  tickEl.innerHTML=html;
 
-    // ── Chart canvas ──
-    const canvas=document.getElementById('chartCanvas');
-    const ctx=canvas.getContext('2d');
-    const trailCanvas=document.getElementById('trailCanvas');
-    const tCtx=trailCanvas.getContext('2d');
-    let W,H,points=[],candlesticks=[],offset=0;
-
-    function resize(){
-      W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight*0.45;
-      trailCanvas.width=window.innerWidth; trailCanvas.height=window.innerHeight;
-      genData();
+  // ── Background Chart ──
+  const canvas=document.getElementById('chartCanvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,pts=[],csticks=[],off=0;
+  function resize(){
+    W=canvas.width=window.innerWidth;
+    H=canvas.height=window.innerHeight*0.4;
+    genData();
+  }
+  function genData(){
+    pts=[]; csticks=[];
+    let y=H*0.6;
+    for(let i=0;i<=90;i++){
+      y+=(Math.random()-0.51)*10;
+      y=Math.max(H*0.08,Math.min(H*0.92,y));
+      pts.push({x:(i/90)*W,y});
     }
-    function genData(){
-      points=[]; candlesticks=[];
-      let y=H*0.65;
-      for(let i=0;i<=80;i++){
-        y+=(Math.random()-0.52)*12;
-        y=Math.max(H*0.1,Math.min(H*0.9,y));
-        points.push({x:(i/80)*W,y});
-      }
-      for(let i=0;i<40;i++){
-        const x=(i/40)*W+W*0.01;
-        const idx=Math.floor((i/40)*80);
-        const baseY=points[Math.min(idx,points.length-1)].y;
-        const open=baseY+(Math.random()-0.5)*25;
-        const close=baseY+(Math.random()-0.5)*25;
-        const high=Math.min(open,close)-Math.random()*15;
-        const low=Math.max(open,close)+Math.random()*15;
-        candlesticks.push({x,open,close,high,low,bull:close<open,w:W/40*0.45});
-      }
+    for(let i=0;i<45;i++){
+      const x=(i/45)*W+W*0.005;
+      const idx=Math.floor((i/45)*90);
+      const by=pts[Math.min(idx,pts.length-1)].y;
+      const o=by+(Math.random()-0.5)*20;
+      const c=by+(Math.random()-0.5)*20;
+      const h=Math.min(o,c)-Math.random()*12;
+      const l=Math.max(o,c)+Math.random()*12;
+      csticks.push({x,o,c,h,l,bull:c<o,w:W/45*0.4});
     }
-    function drawChart(){
-      ctx.clearRect(0,0,W,H);
-      offset+=0.4;
-      candlesticks.forEach((c,i)=>{
-        const shift=Math.sin((offset+i*8)*0.012)*5;
-        const color=c.bull?'#00D4FF':'#FF3B5C';
-        ctx.strokeStyle=color; ctx.lineWidth=1.5;
-        ctx.beginPath(); ctx.moveTo(c.x,c.high+shift); ctx.lineTo(c.x,c.low+shift); ctx.stroke();
-        ctx.fillStyle=color;
-        ctx.fillRect(c.x-c.w/2,Math.min(c.open,c.close)+shift,c.w,Math.max(Math.abs(c.close-c.open),2));
-      });
-      ctx.beginPath(); ctx.strokeStyle='#00D4FF'; ctx.lineWidth=2;
-      points.forEach((p,i)=>{
-        const shift=Math.sin((offset+i*4)*0.018)*6;
-        if(i===0)ctx.moveTo(p.x,p.y+shift); else ctx.lineTo(p.x,p.y+shift);
-      });
-      ctx.stroke();
-      ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath();
-      const g=ctx.createLinearGradient(0,0,0,H);
-      g.addColorStop(0,'rgba(0,212,255,0.08)'); g.addColorStop(1,'rgba(0,212,255,0)');
-      ctx.fillStyle=g; ctx.fill();
-      requestAnimationFrame(drawChart);
-    }
-
-    // ── Mouse trail ──
-    let trails=[];
-    document.addEventListener('mousemove',e=>{
-      trails.push({x:e.clientX,y:e.clientY,life:1});
-      if(trails.length>50)trails.shift();
+  }
+  function drawChart(){
+    ctx.clearRect(0,0,W,H);
+    off+=0.35;
+    csticks.forEach((c,i)=>{
+      const sh=Math.sin((off+i*7)*0.014)*4;
+      const col = c.bull ? '#c8922a' : '#8a5f18';
+      ctx.strokeStyle=col; ctx.lineWidth=1.2;
+      ctx.beginPath(); ctx.moveTo(c.x,c.h+sh); ctx.lineTo(c.x,c.l+sh); ctx.stroke();
+      ctx.fillStyle=col;
+      ctx.fillRect(c.x-c.w/2,Math.min(c.o,c.c)+sh,c.w,Math.max(Math.abs(c.c-c.o),2));
     });
-    function drawTrail(){
-      tCtx.clearRect(0,0,trailCanvas.width,trailCanvas.height);
-      trails=trails.filter(t=>t.life>0);
-      trails.forEach(t=>{
-        t.life-=0.025;
-        tCtx.beginPath();
-        tCtx.arc(t.x,t.y,2*t.life,0,Math.PI*2);
-        tCtx.fillStyle=`rgba(0,212,255,${t.life*0.25})`;
-        tCtx.fill();
-      });
-      requestAnimationFrame(drawTrail);
-    }
+    ctx.beginPath();
+    pts.forEach((p,i)=>{
+      const sh=Math.sin((off+i*5)*0.016)*5;
+      if(i===0)ctx.moveTo(p.x,p.y+sh); else ctx.lineTo(p.x,p.y+sh);
+    });
+    ctx.strokeStyle='#c8922a'; ctx.lineWidth=2; ctx.stroke();
+    ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath();
+    const g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'rgba(200,146,42,0.12)');
+    g.addColorStop(1,'rgba(200,146,42,0)');
+    ctx.fillStyle=g; ctx.fill();
+    requestAnimationFrame(drawChart);
+  }
 
-    window.addEventListener('resize',resize);
-    resize(); drawChart(); drawTrail();
+  // ── Mouse Trail ──
+  const tCanvas=document.getElementById('trailCanvas');
+  const tCtx=tCanvas.getContext('2d');
+  let trails=[];
+  document.addEventListener('mousemove',e=>{
+    trails.push({x:e.clientX,y:e.clientY,life:1});
+    if(trails.length>40) trails.shift();
+  });
+  function drawTrail(){
+    tCtx.clearRect(0,0,tCanvas.width,tCanvas.height);
+    tCanvas.width=window.innerWidth; tCanvas.height=window.innerHeight;
+    trails=trails.filter(t=>t.life>0);
+    trails.forEach(t=>{
+      t.life-=0.03;
+      tCtx.beginPath();
+      tCtx.arc(t.x,t.y,2*t.life,0,Math.PI*2);
+      tCtx.fillStyle=`rgba(200,146,42,${t.life*0.2})`;
+      tCtx.fill();
+    });
+    requestAnimationFrame(drawTrail);
+  }
+
+  window.addEventListener('resize',()=>{ resize(); tCanvas.width=window.innerWidth; tCanvas.height=window.innerHeight; });
+  resize(); drawChart(); drawTrail();
   </script>
 </body>
 </html>
