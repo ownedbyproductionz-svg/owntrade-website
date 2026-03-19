@@ -310,7 +310,7 @@
     .unlock-error{color:var(--red);font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.1em;margin-top:.6rem;min-height:1em;}
 
     /* Hidden trigger — 3 clicks on footer diamond */
-    #secret-trigger{cursor:pointer;position:relative;display:inline-block;}
+    #secret-trigger{position:relative;display:inline-block;}
     #secret-trigger::after{content:'';position:absolute;inset:-8px;border-radius:50%;}
 
     /* ════ SPARPLAN INTERNAL STYLES ════ */
@@ -576,7 +576,7 @@
     <div class="sec-tag">What's coming next</div>
     <div class="sec-h">Roadmap.</div>
     <div class="rm">
-      <div class="rm-row"><div class="rm-badge done" id="secret-trigger" style="cursor:pointer;">DONE</div><div><div class="rm-t">Scalping Bot v3.8 + Backtester</div><p class="rm-d">Bot, dashboard, backtester with SL/TP + weight optimizer, export, load-to-bot — complete.</p></div></div>
+      <div class="rm-row"><div class="rm-badge done" id="secret-trigger">DONE</div><div><div class="rm-t">Scalping Bot v3.8 + Backtester</div><p class="rm-d">Bot, dashboard, backtester with SL/TP + weight optimizer, export, load-to-bot — complete.</p></div></div>
       <div class="rm-row"><div class="rm-badge soon">SOON</div><div><div class="rm-t">Scalping Bot 2 — ETHUSDT</div><p class="rm-d">Second bot for ETHUSDT with its own window, config and trade history.</p></div></div>
       <div class="rm-row"><div class="rm-badge plan">PLANNED</div><div><div class="rm-t">Prop Firm Signaler — Telegram</div><p class="rm-d">Automatic signals via Telegram, IQ Capital rule filter, max drawdown & daily loss limit.</p></div></div>
       <div class="rm-row"><div class="rm-badge plan">PLANNED</div><div><div class="rm-t">Live Trading</div><p class="rm-d">Migration from Binance testnet to live account with full risk management review.</p></div></div>
@@ -585,7 +585,7 @@
 </div>
 
 <footer>
-  <svg id="secret-trigger" title="ownTRADE" class="ft-diamond" width="28" height="28" viewBox="0 0 40 40">
+  <svg class="ft-diamond" width="28" height="28" viewBox="0 0 40 40">
     <defs><linearGradient id="fd-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#8a5f18"/></linearGradient></defs>
     <polygon points="20,3 37,20 20,37 3,20" fill="none" stroke="url(#fd-g)" stroke-width="1.5" opacity="0.6"/>
   </svg>
