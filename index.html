@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ownTRADE — Automated Trading Intelligence</title>
   <meta name="description" content="ownTRADE — The markets talk. Our bots listen. Scalping, Daytrading & Swing — all in one platform.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
   <style>
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -19,28 +21,26 @@
       --surface2:   #141519;
       --border:     #1c1d22;
       --border2:    #252629;
-
       --gold-light: #f5d980;
       --gold:       #c8922a;
       --gold-dim:   #8a5f18;
       --gold-mist:  rgba(200,146,42,0.08);
       --gold-glow:  rgba(200,146,42,0.18);
-
       --white:      #f0ede6;
-      --text:       #c8c4ba;       /* ← raised from muted for body text */
-      --muted:      #8a8d98;       /* ← raised for labels */
-      --dim:        #4a4d58;       /* ← raised for very dim text */
-
+      --text:       #c8c4ba;
+      --muted:      #8a8d98;
+      --dim:        #4a4d58;
       --green:      #2dcc7a;
       --red:        #e8455a;
+      --blue:       #38bdf8;
+      --pink:       #f472b6;
     }
 
     html { scroll-behavior: smooth; }
-
     body {
       background: var(--bg);
       color: var(--white);
-      font-family: 'Rajdhani', sans-serif;
+      font-family: 'JetBrains Mono', monospace;
       min-height: 100vh;
       overflow-x: hidden;
       cursor: crosshair;
@@ -48,12 +48,10 @@
 
     /* ─── NOISE ─── */
     body::before {
-      content:'';
-      position:fixed; top:0; left:0; width:100%; height:100%;
+      content:''; position:fixed; top:0; left:0; width:100%; height:100%;
       opacity:0.02;
       background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      background-size:200px;
-      pointer-events:none; z-index:999;
+      background-size:200px; pointer-events:none; z-index:999;
     }
 
     /* ─── GRID ─── */
@@ -67,12 +65,7 @@
     }
 
     /* ─── SCANLINES ─── */
-    .scanline {
-      position:fixed; left:0;
-      width:100%; height:1px;
-      background:linear-gradient(90deg,transparent 0%,rgba(200,146,42,0.06) 50%,transparent 100%);
-      z-index:2; pointer-events:none;
-    }
+    .scanline { position:fixed;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(200,146,42,0.06) 50%,transparent 100%);z-index:2;pointer-events:none; }
     .scanline:nth-child(1){animation:scanDown 9s linear infinite;}
     .scanline:nth-child(2){animation:scanDown 14s linear infinite 5s;opacity:0.4;}
     .scanline:nth-child(3){animation:scanUp 11s linear infinite 2s;opacity:0.25;}
@@ -99,29 +92,15 @@
     /* ─── TICKER ─── */
     .ticker-bar{
       position:fixed;top:0;left:0;width:100%;height:28px;
-      background:rgba(7,8,10,0.92);
-      border-bottom:1px solid rgba(200,146,42,0.1);
-      z-index:20;overflow:hidden;display:flex;align-items:center;
-      backdrop-filter:blur(8px);
+      background:rgba(7,8,10,0.92);border-bottom:1px solid rgba(200,146,42,0.1);
+      z-index:20;overflow:hidden;display:flex;align-items:center;backdrop-filter:blur(8px);
     }
-    .ticker-track{
-      display:flex;gap:36px;align-items:center;
-      animation:tickerScroll 38s linear infinite;
-      white-space:nowrap;
-      font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.5px;
-    }
-    .ticker-track .up  {color:var(--green);opacity:0.8;}
-    .ticker-track .down{color:var(--red);opacity:0.8;}
-    .ticker-track .sep {color:var(--dim);font-size:8px;}
+    .ticker-track{display:flex;gap:36px;align-items:center;animation:tickerScroll 38s linear infinite;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.5px;}
+    .ticker-track .up{color:var(--green);opacity:0.8;}.ticker-track .down{color:var(--red);opacity:0.8;}.ticker-track .sep{color:var(--dim);font-size:8px;}
     @keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
     /* ─── CANVASES ─── */
-    #chartCanvas{
-      position:fixed;bottom:0;left:0;width:100%;height:40%;
-      z-index:0;pointer-events:none;opacity:0.055;
-      mask-image:linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 100%);
-      -webkit-mask-image:linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 100%);
-    }
+    #chartCanvas{position:fixed;bottom:0;left:0;width:100%;height:40%;z-index:0;pointer-events:none;opacity:0.055;mask-image:linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 100%);-webkit-mask-image:linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 100%);}
     #trailCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:4;pointer-events:none;}
 
     /* ─── PARTICLES ─── */
@@ -135,59 +114,26 @@
     .particle:nth-child(7){left:90%;width:2px;height:2px;animation-duration:19s;animation-delay:2s;}
     @keyframes ptFloat{0%{opacity:0;transform:translateY(100vh) scale(0)}5%{opacity:0.35;transform:scale(1)}95%{opacity:0.35}100%{opacity:0;transform:translateY(-20vh) scale(0)}}
 
-    /* ════════════════════════════════
-       ▼  HERO SECTION
-    ════════════════════════════════ */
-    .hero {
-      position:relative; z-index:10;
-      display:flex;flex-direction:column;align-items:center;text-align:center;
-      padding:80px 24px 100px;
-      max-width:960px;margin:0 auto;
-      min-height:100vh;justify-content:center;
-    }
-
+    /* ════ HERO ════ */
+    .hero{position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;text-align:center;padding:80px 24px 100px;max-width:960px;margin:0 auto;min-height:100vh;justify-content:center;}
     .logo-wrap{margin-bottom:0.5rem;animation:revealUp 1.2s cubic-bezier(0.16,1,0.3,1) 0.2s both;}
     .logo{font-family:'Cinzel',serif;font-size:clamp(3.5rem,9vw,6.5rem);font-weight:700;letter-spacing:4px;line-height:1;}
-    .logo .own{color:var(--white);}
-    .logo .trade{
-      background:linear-gradient(135deg,#f5d980 0%,#c8922a 50%,#f5d980 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-      filter:drop-shadow(0 0 24px rgba(200,146,42,0.4));
-    }
+    .logo .own{color:var(--white);}.logo .trade{background:linear-gradient(135deg,#f5d980 0%,#c8922a 50%,#f5d980 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 24px rgba(200,146,42,0.4));}
     .logo:hover .trade{animation:goldGlitch 0.45s ease-in-out;}
-    @keyframes goldGlitch{
-      0%,100%{filter:drop-shadow(0 0 24px rgba(200,146,42,0.4));}
-      15%{transform:translateX(-3px);filter:drop-shadow(-4px 0 #c8922a) drop-shadow(4px 0 #8a5f18);}
-      30%{transform:translateX(3px);filter:drop-shadow(4px 0 #c8922a) drop-shadow(-4px 0 #8a5f18);}
-      50%{transform:translateX(0);filter:drop-shadow(0 0 40px rgba(200,146,42,0.7));}
-    }
-
-    .subtitle{
-      font-family:'JetBrains Mono',monospace;font-size:clamp(0.55rem,1.4vw,0.72rem);
-      letter-spacing:5px;text-transform:uppercase;color:var(--muted);
-      margin-bottom:2.5rem;animation:revealUp 1s ease-out 0.5s both;min-height:1.2em;
-    }
+    @keyframes goldGlitch{0%,100%{filter:drop-shadow(0 0 24px rgba(200,146,42,0.4));}15%{transform:translateX(-3px);filter:drop-shadow(-4px 0 #c8922a) drop-shadow(4px 0 #8a5f18);}30%{transform:translateX(3px);filter:drop-shadow(4px 0 #c8922a) drop-shadow(-4px 0 #8a5f18);}50%{transform:translateX(0);filter:drop-shadow(0 0 40px rgba(200,146,42,0.7));}}
+    .subtitle{font-family:'JetBrains Mono',monospace;font-size:clamp(0.55rem,1.4vw,0.72rem);letter-spacing:5px;text-transform:uppercase;color:var(--muted);margin-bottom:2.5rem;animation:revealUp 1s ease-out 0.5s both;min-height:1.2em;}
     .cursor{display:inline-block;width:2px;height:0.9em;background:var(--gold);margin-left:3px;vertical-align:middle;animation:blink 0.75s step-end infinite;}
     @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-
-    .divider-h{
-      width:1px;height:1px;
-      background:linear-gradient(90deg,transparent,var(--gold),transparent);
-      margin-bottom:2.8rem;
-      animation:revealUp 1s ease-out 0.6s both, expandW 2s ease-out 0.8s both;
-    }
+    .divider-h{width:1px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-bottom:2.8rem;animation:revealUp 1s ease-out 0.6s both, expandW 2s ease-out 0.8s both;}
     @keyframes expandW{from{width:0}to{width:80px}}
-
     .tagline{margin-bottom:1.2rem;animation:revealUp 1s ease-out 0.7s both;}
     .tagline-line{font-family:'Rajdhani',sans-serif;font-size:clamp(1rem,2.2vw,1.35rem);font-weight:300;line-height:2;color:var(--muted);opacity:0;}
     .tagline-line.accent{font-weight:700;background:linear-gradient(90deg,#f5d980,#c8922a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 12px rgba(200,146,42,0.3));}
     .tagline-line.visible{animation:lineReveal 0.9s cubic-bezier(0.16,1,0.3,1) forwards;}
     @keyframes lineReveal{0%{opacity:0;transform:translateY(12px);filter:blur(5px)}100%{opacity:1;transform:translateY(0);filter:blur(0)}}
-
     .status{display:flex;align-items:center;gap:10px;margin:1.6rem 0 1rem;font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:4px;color:var(--muted);animation:revealUp 1s ease-out 0.8s both;}
     .status-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px rgba(200,146,42,0.8);animation:dotPulse 2.5s ease-in-out infinite;}
     @keyframes dotPulse{0%,100%{box-shadow:0 0 10px rgba(200,146,42,0.8);transform:scale(1);}50%{box-shadow:0 0 3px rgba(200,146,42,0.3);transform:scale(0.75);}}
-
     .badge-row{display:flex;align-items:center;gap:18px;margin:0.8rem 0 2.2rem;animation:revealUp 1s ease-out 0.9s both;}
     .badge-line{height:1px;background:linear-gradient(90deg,transparent,rgba(200,146,42,0.4));animation:lineGrow 1.5s ease-out 1.2s both;}
     .badge-line:last-child{background:linear-gradient(90deg,rgba(200,146,42,0.4),transparent);}
@@ -195,51 +141,33 @@
     .badge{font-family:'JetBrains Mono',monospace;font-size:clamp(1.1rem,2.8vw,1.5rem);font-weight:500;letter-spacing:14px;background:linear-gradient(135deg,#f5d980 0%,#c8922a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:badgePulse 5s ease-in-out infinite;}
     @keyframes badgePulse{0%,100%{filter:drop-shadow(0 0 8px rgba(200,146,42,0.3));}50%{filter:drop-shadow(0 0 24px rgba(200,146,42,0.6));}}
 
-    /* MODE CARDS */
+    /* MODES */
     .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;margin:0 0 2rem;animation:revealUp 1s ease-out 1s both;}
-    .mode-card{
-      background:var(--surface);border:1px solid var(--border);border-radius:10px;
-      padding:26px 18px 22px;display:flex;flex-direction:column;align-items:center;gap:14px;
-      position:relative;overflow:hidden;
-      transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);cursor:default;
-    }
+    .mode-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:26px 18px 22px;display:flex;flex-direction:column;align-items:center;gap:14px;position:relative;overflow:hidden;transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);cursor:default;}
     .mode-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity 0.4s;}
     .mode-card::after{content:'';position:absolute;inset:0;border-radius:10px;background:radial-gradient(ellipse at 50% 0%,rgba(200,146,42,0.06) 0%,transparent 65%);opacity:0;transition:opacity 0.4s;}
-    .mode-card:hover{border-color:rgba(200,146,42,0.3);transform:translateY(-5px);box-shadow:0 16px 48px rgba(200,146,42,0.1),0 0 0 1px rgba(200,146,42,0.05);}
+    .mode-card:hover{border-color:rgba(200,146,42,0.3);transform:translateY(-5px);box-shadow:0 16px 48px rgba(200,146,42,0.1);}
     .mode-card:hover::before,.mode-card:hover::after{opacity:1;}
     .mode-icon{width:72px;height:54px;position:relative;flex-shrink:0;}
     .mode-label{font-family:'JetBrains Mono',monospace;font-size:0.58rem;font-weight:500;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(90deg,#f5d980,#c8922a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
     .mode-name{font-family:'Cinzel',serif;font-size:0.9rem;font-weight:600;color:var(--white);letter-spacing:1px;}
     .mode-desc{font-family:'Rajdhani',sans-serif;font-size:0.78rem;color:var(--muted);line-height:1.7;font-weight:400;}
     .mode-text{display:flex;flex-direction:column;gap:5px;align-items:center;}
-
-    /* EKG */
     .ekg-svg{width:72px;height:54px;}
     .ekg-line{stroke:url(#ekgGold);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px rgba(200,146,42,0.7));stroke-dasharray:220;stroke-dashoffset:220;animation:ekgDraw 1.4s ease-out 1.2s forwards,ekgPulse 3s ease-in-out 2.8s infinite;}
     .ekg-bolt{fill:var(--gold-light);opacity:0;filter:drop-shadow(0 0 8px rgba(245,217,128,0.9));animation:boltFlash 3s ease-in-out 2.8s infinite;}
     @keyframes ekgDraw{to{stroke-dashoffset:0}}
     @keyframes ekgPulse{0%,100%{filter:drop-shadow(0 0 5px rgba(200,146,42,0.7));}40%,60%{filter:drop-shadow(0 0 12px rgba(245,217,128,1));}}
     @keyframes boltFlash{0%,30%{opacity:0;transform:scale(0.8)}38%,52%{opacity:1;transform:scale(1)}70%,100%{opacity:0}}
-    /* Candles */
-    .candle-svg{width:72px;height:54px;}
+    .candle-svg,.mtn-svg{width:72px;height:54px;}
     .c-wick{stroke:var(--gold);stroke-width:1.5;stroke-linecap:round;opacity:0;}
     .c-body{rx:1.5;transform-origin:bottom center;transform:scaleY(0);}
     .c-body.bull{fill:var(--gold-light);filter:drop-shadow(0 0 4px rgba(245,217,128,0.5));}
     .c-body.bear{fill:var(--gold-dim);filter:drop-shadow(0 0 4px rgba(138,95,24,0.5));}
-    .c-body:nth-of-type(1){animation:cGrow .35s ease-out 1.3s forwards}
-    .c-body:nth-of-type(2){animation:cGrow .35s ease-out 1.6s forwards}
-    .c-body:nth-of-type(3){animation:cGrow .35s ease-out 1.9s forwards}
-    .c-body:nth-of-type(4){animation:cGrow .35s ease-out 2.2s forwards}
-    .c-body:nth-of-type(5){animation:cGrow .35s ease-out 2.5s forwards}
-    .c-wick:nth-of-type(6){animation:cFade .3s ease-out 1.3s forwards}
-    .c-wick:nth-of-type(7){animation:cFade .3s ease-out 1.6s forwards}
-    .c-wick:nth-of-type(8){animation:cFade .3s ease-out 1.9s forwards}
-    .c-wick:nth-of-type(9){animation:cFade .3s ease-out 2.2s forwards}
-    .c-wick:nth-of-type(10){animation:cFade .3s ease-out 2.5s forwards}
+    .c-body:nth-of-type(1){animation:cGrow .35s ease-out 1.3s forwards}.c-body:nth-of-type(2){animation:cGrow .35s ease-out 1.6s forwards}.c-body:nth-of-type(3){animation:cGrow .35s ease-out 1.9s forwards}.c-body:nth-of-type(4){animation:cGrow .35s ease-out 2.2s forwards}.c-body:nth-of-type(5){animation:cGrow .35s ease-out 2.5s forwards}
+    .c-wick:nth-of-type(6){animation:cFade .3s ease-out 1.3s forwards}.c-wick:nth-of-type(7){animation:cFade .3s ease-out 1.6s forwards}.c-wick:nth-of-type(8){animation:cFade .3s ease-out 1.9s forwards}.c-wick:nth-of-type(9){animation:cFade .3s ease-out 2.2s forwards}.c-wick:nth-of-type(10){animation:cFade .3s ease-out 2.5s forwards}
     @keyframes cGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
     @keyframes cFade{from{opacity:0}to{opacity:0.8}}
-    /* Mountain */
-    .mtn-svg{width:72px;height:54px;}
     .mtn-area{fill:url(#mtnGrad);opacity:0;animation:mtnFade .8s ease-out 3s forwards;}
     .mtn-stroke{stroke:url(#ekgGold);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 7px rgba(200,146,42,0.7));stroke-dasharray:280;stroke-dashoffset:280;animation:mtnDraw 1.8s ease-out 1.2s forwards;}
     .mtn-peak{fill:var(--gold-light);opacity:0;filter:drop-shadow(0 0 10px rgba(245,217,128,1));animation:peakGlow 3s ease-in-out 3.2s infinite;}
@@ -250,8 +178,7 @@
     /* TAGS */
     .tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:2.6rem;}
     .tag{font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);padding:7px 15px;border:1px solid var(--border2);border-radius:3px;opacity:0;animation:tagPop 0.45s ease-out forwards;transition:all 0.35s ease;background:var(--surface);}
-    .tag:nth-child(1){animation-delay:1.5s}.tag:nth-child(2){animation-delay:1.7s}
-    .tag:nth-child(3){animation-delay:1.9s}.tag:nth-child(4){animation-delay:2.1s}
+    .tag:nth-child(1){animation-delay:1.5s}.tag:nth-child(2){animation-delay:1.7s}.tag:nth-child(3){animation-delay:1.9s}.tag:nth-child(4){animation-delay:2.1s}
     @keyframes tagPop{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
     .tag:hover{border-color:rgba(200,146,42,0.4);color:var(--gold-light);background:var(--gold-mist);transform:translateY(-2px);}
 
@@ -265,112 +192,42 @@
     .link-sep{width:4px;height:4px;border-radius:50%;background:var(--dim);}
 
     /* SCROLL HINT */
-    .scroll-hint{
-      position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
-      display:flex;flex-direction:column;align-items:center;gap:8px;
-      font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:4px;
-      color:var(--dim);animation:revealUp 1s ease-out 3s both;
-      cursor:pointer;transition:color .2s;
-    }
+    .scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:4px;color:var(--dim);animation:revealUp 1s ease-out 3s both;cursor:pointer;transition:color .2s;}
     .scroll-hint:hover{color:var(--gold);}
     .scroll-arrow{width:16px;height:16px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(45deg);animation:arrowBounce 2s ease-in-out infinite;}
     @keyframes arrowBounce{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(4px)}}
 
-    /* ════════════════════════════════
-       ▼  PRODUCT SECTION (below fold)
-    ════════════════════════════════ */
-
-    /* PRODUCT SECTION WRAPPER */
-    #product {
-      position:relative;z-index:10;
-      border-top:1px solid var(--border);
-    }
-
-    /* Section transition from hero */
-    .product-intro {
-      text-align:center;padding:5rem 2rem 3rem;
-      background:linear-gradient(to bottom, var(--bg) 0%, var(--bg2) 100%);
-    }
-    .product-intro-label{
-      font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:.35em;
-      color:var(--gold);text-transform:uppercase;margin-bottom:.8rem;
-    }
-    .product-intro-h{
-      font-family:'Cinzel',serif;font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;
-      color:var(--gold-light);letter-spacing:.08em;margin-bottom:.8rem;
-    }
-    .product-intro-p{
-      font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:400;
-      color:var(--text);max-width:580px;margin:0 auto;line-height:1.85;
-    }
-
-    /* SHARED PRODUCT STYLES */
-    .pw { max-width:1080px;margin:0 auto;padding:4rem 2rem; }
-
-    .sec-tag{
-      font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.35em;
-      color:var(--gold);text-transform:uppercase;margin-bottom:.7rem;
-      display:flex;align-items:center;gap:14px;
-    }
+    /* ════ PRODUCT SECTION ════ */
+    #product{position:relative;z-index:10;border-top:1px solid var(--border);}
+    .product-intro{text-align:center;padding:5rem 2rem 3rem;background:linear-gradient(to bottom, var(--bg) 0%, var(--bg2) 100%);}
+    .product-intro-label{font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:.35em;color:var(--gold);text-transform:uppercase;margin-bottom:.8rem;}
+    .product-intro-h{font-family:'Cinzel',serif;font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;color:var(--gold-light);letter-spacing:.08em;margin-bottom:.8rem;}
+    .product-intro-p{font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:400;color:var(--text);max-width:580px;margin:0 auto;line-height:1.85;}
+    .pw{max-width:1080px;margin:0 auto;padding:4rem 2rem;}
+    .sec-tag{font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.35em;color:var(--gold);text-transform:uppercase;margin-bottom:.7rem;display:flex;align-items:center;gap:14px;}
     .sec-tag::after{content:'';flex:1;height:1px;background:var(--border);}
-    .sec-h{
-      font-family:'Cinzel',serif;font-size:clamp(1.4rem,3.5vw,2.1rem);font-weight:700;
-      color:var(--gold-light);letter-spacing:.08em;margin-bottom:.7rem;
-    }
-    .sec-p{
-      font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:400;
-      color:var(--text);max-width:600px;line-height:1.85;margin-bottom:2.8rem;
-    }
-
-    /* STATS STRIP */
-    .stats-strip{
-      display:flex;justify-content:center;flex-wrap:wrap;
-      background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-    }
+    .sec-h{font-family:'Cinzel',serif;font-size:clamp(1.4rem,3.5vw,2.1rem);font-weight:700;color:var(--gold-light);letter-spacing:.08em;margin-bottom:.7rem;}
+    .sec-p{font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:400;color:var(--text);max-width:600px;line-height:1.85;margin-bottom:2.8rem;}
+    .stats-strip{display:flex;justify-content:center;flex-wrap:wrap;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
     .s-item{text-align:center;padding:1.5rem 2.2rem;border-right:1px solid var(--border);}
     .s-item:last-child{border-right:none;}
-    .s-num{
-      font-family:'Cinzel',serif;font-size:clamp(1.4rem,2.8vw,1.9rem);font-weight:700;
-      background:linear-gradient(135deg,var(--gold-light),var(--gold));
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-    }
+    .s-num{font-family:'Cinzel',serif;font-size:clamp(1.4rem,2.8vw,1.9rem);font-weight:700;background:linear-gradient(135deg,var(--gold-light),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
     .s-lbl{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-top:4px;}
-
-    /* HR */
     .hr-full{height:1px;background:var(--border);}
-
-    /* FEATURE GRID */
     .fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1px;background:var(--border);}
-    .fc{
-      background:var(--surface);padding:2rem 1.8rem;
-      transition:background .2s;position:relative;overflow:hidden;
-    }
+    .fc{background:var(--surface);padding:2rem 1.8rem;transition:background .2s;position:relative;overflow:hidden;}
     .fc::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,146,42,.25),transparent);opacity:0;transition:opacity .3s;}
     .fc:hover{background:var(--surface2);}.fc:hover::before{opacity:1;}
     .fc-icon{width:44px;height:44px;margin-bottom:1.2rem;}
     .fc-title{font-family:'Cinzel',serif;font-size:.82rem;font-weight:600;color:var(--gold-light);letter-spacing:.1em;margin-bottom:.55rem;}
     .fc-desc{font-family:'Rajdhani',sans-serif;font-size:.92rem;font-weight:400;color:var(--text);line-height:1.75;}
-
-    /* TWO COL */
     .tcol{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;}
     @media(max-width:720px){.tcol{grid-template-columns:1fr;gap:2.5rem;}}
-
-    /* TERMINAL */
-    .term{
-      background:#030405;border:1px solid rgba(200,146,42,.2);border-radius:4px;
-      padding:1.4rem 1.5rem;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:2.1;
-    }
+    .term{background:#030405;border:1px solid rgba(200,146,42,.2);border-radius:4px;padding:1.4rem 1.5rem;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:2.1;}
     .tbar{display:flex;gap:6px;margin-bottom:1rem;padding-bottom:.8rem;border-bottom:1px solid var(--border);}
     .tdot{width:9px;height:9px;border-radius:50%;}
-    .tl{color:var(--text);}
-    .tl .k{color:var(--gold);}
-    .tl .vg{color:#4ecb82;}
-    .tl .vr{color:#e06070;}
-    .tl .vx{color:var(--gold-light);}
-    .tl .cm{color:var(--dim);}
+    .tl{color:var(--text);}.tl .k{color:var(--gold);}.tl .vg{color:#4ecb82;}.tl .vr{color:#e06070;}.tl .vx{color:var(--gold-light);}.tl .cm{color:var(--dim);}
     .tprompt::before{content:'▸  ';color:var(--gold-dim);}
-
-    /* BACKTESTER MOCK */
     .bt{background:#030405;border:1px solid rgba(200,146,42,.2);border-radius:4px;overflow:hidden;}
     .bt-hdr{background:var(--surface2);padding:.7rem 1.1rem;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.22em;color:var(--gold);border-bottom:1px solid var(--border);text-transform:uppercase;}
     .bt-sg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);}
@@ -380,8 +237,6 @@
     .bt-sl{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.1em;color:var(--muted);margin-top:3px;text-transform:uppercase;}
     .bt-eq{padding:1rem 1.1rem 1.2rem;}
     .eq-lbl{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.18em;color:var(--muted);margin-bottom:.45rem;text-transform:uppercase;}
-
-    /* ROADMAP */
     .rm{display:flex;flex-direction:column;}
     .rm-row{display:flex;gap:1.4rem;padding:1.4rem 0;border-bottom:1px solid var(--border);align-items:flex-start;}
     .rm-row:last-child{border-bottom:none;}
@@ -391,26 +246,132 @@
     .rm-badge.plan{background:rgba(255,255,255,.02);color:var(--dim);border:1px solid var(--border);}
     .rm-t{font-family:'Cinzel',serif;font-size:.82rem;font-weight:600;color:var(--gold-light);letter-spacing:.07em;margin-bottom:.3rem;}
     .rm-d{font-family:'Rajdhani',sans-serif;font-size:.92rem;font-weight:400;color:var(--text);line-height:1.7;}
-
-    /* TECH PILLS */
     .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:1.4rem;}
     .pill{font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.07em;padding:5px 12px;border:1px solid var(--border);color:var(--muted);border-radius:2px;background:var(--surface);}
     .pill.hl{border-color:var(--gold-dim);color:var(--gold);background:rgba(200,146,42,.05);}
-
-    /* FOOTER */
-    footer{
-      border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;
-      position:relative;z-index:10;
-    }
-    .ft-diamond{display:block;margin:0 auto .8rem;}
+    footer{border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;position:relative;z-index:10;}
     .ft-logo{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.3em;color:var(--gold);margin-bottom:.5rem;}
     .ft-links{display:flex;justify-content:center;gap:24px;margin-bottom:.5rem;}
     .ft-link{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.12em;color:var(--muted);text-decoration:none;transition:color .2s;}
     .ft-link:hover{color:var(--gold);}
     .ft-copy{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.15em;color:var(--dim);}
-
     @keyframes revealUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
     @media(max-width:640px){.modes{grid-template-columns:1fr;}.links{flex-direction:column;}.link-sep{display:none;}.s-item{padding:1.2rem 1.4rem;}}
+
+    /* ════ SECRET SPARPLAN ════ */
+    #sparplan-overlay {
+      position:fixed;inset:0;z-index:200;
+      background:var(--bg);
+      overflow-y:auto;
+      display:none;
+      animation:fadeIn .25s ease;
+    }
+    #sparplan-overlay.open{display:block;}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+    /* Sparplan close button */
+    .sp-close {
+      position:fixed;top:36px;right:24px;z-index:201;
+      background:var(--surface);border:1px solid var(--border2);border-radius:4px;
+      color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:.7rem;
+      letter-spacing:.2em;padding:8px 16px;cursor:pointer;
+      transition:all .2s;
+    }
+    .sp-close:hover{background:var(--gold-mist);border-color:rgba(200,146,42,.5);}
+
+    /* Secret unlock overlay */
+    #unlock-overlay {
+      position:fixed;inset:0;z-index:300;
+      background:rgba(7,8,10,.95);backdrop-filter:blur(12px);
+      display:flex;align-items:center;justify-content:center;
+      animation:fadeIn .2s ease;
+    }
+    .unlock-box {
+      background:var(--surface);border:1px solid rgba(200,146,42,.25);border-radius:8px;
+      padding:3rem 2.5rem;text-align:center;max-width:380px;width:90%;
+    }
+    .unlock-title{font-family:'Cinzel',serif;font-size:1.4rem;font-weight:700;color:var(--gold-light);letter-spacing:.1em;margin-bottom:.5rem;}
+    .unlock-sub{font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.2em;color:var(--muted);margin-bottom:2rem;}
+    .unlock-input{
+      width:100%;background:#030405;border:1px solid var(--border2);border-radius:4px;
+      color:var(--white);font-family:'JetBrains Mono',monospace;font-size:.9rem;
+      letter-spacing:.3em;text-align:center;padding:14px;outline:none;margin-bottom:1rem;
+      transition:border-color .2s;
+    }
+    .unlock-input:focus{border-color:rgba(200,146,42,.5);}
+    .unlock-input::placeholder{letter-spacing:.1em;color:var(--dim);}
+    .unlock-btn{
+      width:100%;background:linear-gradient(135deg,rgba(200,146,42,.8),rgba(138,95,24,.8));
+      border:none;border-radius:4px;color:var(--white);font-family:'JetBrains Mono',monospace;
+      font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;padding:13px;cursor:pointer;
+      transition:all .2s;
+    }
+    .unlock-btn:hover{background:linear-gradient(135deg,var(--gold),var(--gold-dim));box-shadow:0 0 24px rgba(200,146,42,.3);}
+    .unlock-error{color:var(--red);font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.1em;margin-top:.6rem;min-height:1em;}
+
+    /* Hidden trigger — 3 clicks on footer diamond */
+    #secret-trigger{cursor:pointer;position:relative;display:inline-block;}
+    #secret-trigger::after{content:'';position:absolute;inset:-8px;border-radius:50%;}
+
+    /* ════ SPARPLAN INTERNAL STYLES ════ */
+    .sp-wrap{max-width:700px;margin:0 auto;padding:50px 16px 80px;}
+
+    /* Sparplan Input */
+    input[type=range]{-webkit-appearance:none;width:100%;cursor:pointer;height:4px;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:2px;outline:none;}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--white);border:2px solid var(--gold);cursor:pointer;box-shadow:0 0 8px rgba(200,146,42,.5);}
+
+    /* SP Cards */
+    .sp-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px;animation:revealUp 0.3s ease both;}
+    .sp-btn{cursor:pointer;font-family:'JetBrains Mono',monospace;border:none;transition:all 0.2s;border-radius:8px;}
+    .sp-btn:active{transform:scale(0.97);}
+
+    /* Sparplan Tab Nav */
+    .sp-tabnav{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:0;}
+    .sp-tab{flex:1;min-width:90px;padding:10px 6px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-bottom:-1px;}
+    .sp-tab.active{color:var(--gold-light);border-bottom-color:var(--gold);}
+    .sp-tab:hover:not(.active){color:var(--text);}
+
+    /* Progress bar */
+    .sp-progbar{height:8px;background:#111;border-radius:4px;overflow:hidden;margin-bottom:10px;}
+    .sp-progbar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+
+    /* Versus bar */
+    .versus-bar{position:relative;height:16px;border-radius:8px;overflow:hidden;background:#111;}
+    .versus-tim{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,rgba(56,189,248,.4),var(--blue));border-radius:8px 0 0 8px;transition:width 1s cubic-bezier(.4,0,.2,1);}
+    .versus-lena{position:absolute;right:0;top:0;height:100%;background:linear-gradient(90deg,rgba(244,114,182,.4),var(--pink));border-radius:0 8px 8px 0;transition:width 1s cubic-bezier(.4,0,.2,1);}
+
+    /* Goal/Activity cards */
+    .goal-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;transition:border-color .2s;}
+    .goal-card.unlocked{border-color:rgba(45,204,122,.3);background:linear-gradient(135deg,#030a03,#0a0a0f);}
+    .task-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #111;cursor:pointer;}
+    .task-row:last-child{border-bottom:none;}
+    .task-box{width:18px;height:18px;border-radius:4px;border:1px solid var(--border2);background:#030405;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:11px;}
+    .task-box.done{background:rgba(45,204,122,.15);border-color:rgba(45,204,122,.5);color:var(--green);}
+    .activity-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;background:var(--surface);border:1px solid var(--border);margin-bottom:8px;transition:all .2s;cursor:pointer;}
+    .activity-item:hover{border-color:var(--border2);}
+    .activity-item.done-item{opacity:.45;}
+
+    /* Map */
+    .map-wrap{border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-bottom:16px;}
+    #travel-map{height:320px;width:100%;}
+    .leaflet-container{background:#030405!important;}
+    .leaflet-tile{filter:brightness(0.4) saturate(0.3) hue-rotate(200deg)!important;}
+    .leaflet-control-zoom a{background:var(--surface)!important;color:var(--muted)!important;border-color:var(--border)!important;}
+    .leaflet-control-zoom a:hover{background:var(--surface2)!important;color:var(--white)!important;}
+    .leaflet-control-attribution{background:rgba(7,8,10,.8)!important;color:var(--dim)!important;font-size:9px!important;}
+    .goal-popup .leaflet-popup-content-wrapper{background:var(--surface);border:1px solid var(--border2);border-radius:10px;color:var(--white);font-family:'JetBrains Mono',monospace;box-shadow:0 8px 32px #00000088;}
+    .goal-popup .leaflet-popup-tip{background:var(--surface);}
+    .goal-popup .leaflet-popup-content{margin:12px 16px;font-size:11px;line-height:1.6;}
+
+    /* Floating particle for interest */
+    .sp-particle{position:absolute;pointer-events:none;font-size:11px;color:var(--green);font-family:'JetBrains Mono',monospace;animation:floatUp 1.5s ease forwards;}
+    @keyframes floatUp{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-40px);opacity:0}}
+    @keyframes confetti{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(-70px) rotate(360deg);opacity:0}}
+    @keyframes crownBounce{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-4px) rotate(5deg)}}
+    .crown{display:inline-block;animation:crownBounce 2s ease-in-out infinite;}
+    @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
   </style>
 </head>
 <body>
@@ -429,106 +390,66 @@
 <canvas id="chartCanvas"></canvas>
 <canvas id="trailCanvas"></canvas>
 
-<!-- ════════════════════════════════
-     ▼  HERO
-════════════════════════════════ -->
+<!-- ════ HERO ════ -->
 <section class="hero">
   <div class="logo-wrap">
     <h1 class="logo"><span class="own">own</span><span class="trade">TRADE</span></h1>
   </div>
-
   <p class="subtitle"><span id="typedText"></span><span class="cursor"></span></p>
-
   <div class="divider-h"></div>
-
   <div class="tagline">
     <p class="tagline-line" id="tl1">The markets talk.</p>
     <p class="tagline-line accent" id="tl2">Our bots listen.</p>
   </div>
-
   <div class="status"><div class="status-dot"></div><span>SYSTEMS ONLINE</span></div>
-
   <div class="badge-row">
     <div class="badge-line"></div>
     <span class="badge">2026</span>
     <div class="badge-line"></div>
   </div>
-
-  <!-- TRADING MODES -->
   <div class="modes">
-    <!-- SCALPING -->
     <div class="mode-card">
       <div class="mode-icon">
         <svg class="ekg-svg" viewBox="0 0 72 54">
-          <defs>
-            <linearGradient id="ekgGold" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%"   stop-color="#8a5f18"/>
-              <stop offset="45%"  stop-color="#f5d980"/>
-              <stop offset="100%" stop-color="#c8922a"/>
-            </linearGradient>
-          </defs>
+          <defs><linearGradient id="ekgGold" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#8a5f18"/><stop offset="45%" stop-color="#f5d980"/><stop offset="100%" stop-color="#c8922a"/></linearGradient></defs>
           <polyline class="ekg-line" points="0,30 10,30 15,20 20,42 26,8 31,42 36,26 40,30 54,30 72,30"/>
-          <polygon  class="ekg-bolt" points="28,4 23,18 27,18 22,30 30,14 26,14"/>
+          <polygon class="ekg-bolt" points="28,4 23,18 27,18 22,30 30,14 26,14"/>
         </svg>
       </div>
-      <div class="mode-text">
-        <span class="mode-label">Scalping</span>
-        <span class="mode-name">Lightning Fast</span>
-        <span class="mode-desc">5m · High Frequency<br>Multiple Trades / Day</span>
-      </div>
+      <div class="mode-text"><span class="mode-label">Scalping</span><span class="mode-name">Lightning Fast</span><span class="mode-desc">5m · High Frequency<br>Multiple Trades / Day</span></div>
     </div>
-    <!-- DAYTRADING -->
     <div class="mode-card">
       <div class="mode-icon">
         <svg class="candle-svg" viewBox="0 0 72 54">
-          <rect class="c-body bull" x="6"  y="28" width="8" height="20" transform-origin="10 48"/>
+          <defs><linearGradient id="mtnGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c8922a" stop-opacity="0.25"/><stop offset="100%" stop-color="#c8922a" stop-opacity="0"/></linearGradient></defs>
+          <rect class="c-body bull" x="6" y="28" width="8" height="20" transform-origin="10 48"/>
           <rect class="c-body bear" x="20" y="20" width="8" height="28" transform-origin="24 48"/>
           <rect class="c-body bull" x="34" y="15" width="8" height="33" transform-origin="38 48"/>
           <rect class="c-body bear" x="48" y="22" width="8" height="26" transform-origin="52 48"/>
           <rect class="c-body bull" x="62" y="10" width="8" height="38" transform-origin="66 48"/>
           <line class="c-wick" x1="10" y1="23" x2="10" y2="28"/><line class="c-wick" x1="10" y1="48" x2="10" y2="52"/>
           <line class="c-wick" x1="24" y1="15" x2="24" y2="20"/><line class="c-wick" x1="24" y1="48" x2="24" y2="52"/>
-          <line class="c-wick" x1="38" y1="9"  x2="38" y2="15"/><line class="c-wick" x1="38" y1="48" x2="38" y2="52"/>
+          <line class="c-wick" x1="38" y1="9" x2="38" y2="15"/><line class="c-wick" x1="38" y1="48" x2="38" y2="52"/>
           <line class="c-wick" x1="52" y1="16" x2="52" y2="22"/><line class="c-wick" x1="52" y1="48" x2="52" y2="52"/>
-          <line class="c-wick" x1="66" y1="4"  x2="66" y2="10"/><line class="c-wick" x1="66" y1="48" x2="66" y2="52"/>
+          <line class="c-wick" x1="66" y1="4" x2="66" y2="10"/><line class="c-wick" x1="66" y1="48" x2="66" y2="52"/>
         </svg>
       </div>
-      <div class="mode-text">
-        <span class="mode-label">Daytrading</span>
-        <span class="mode-name">Precision Entry</span>
-        <span class="mode-desc">15m–1h · 2–5 Trades<br>Session-Based</span>
-      </div>
+      <div class="mode-text"><span class="mode-label">Daytrading</span><span class="mode-name">Precision Entry</span><span class="mode-desc">15m–1h · 2–5 Trades<br>Session-Based</span></div>
     </div>
-    <!-- SWING -->
     <div class="mode-card">
       <div class="mode-icon">
         <svg class="mtn-svg" viewBox="0 0 72 54">
-          <defs>
-            <linearGradient id="mtnGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"   stop-color="#c8922a" stop-opacity="0.25"/>
-              <stop offset="100%" stop-color="#c8922a" stop-opacity="0"/>
-            </linearGradient>
-          </defs>
-          <polygon  class="mtn-area"   points="0,52 16,36 26,42 38,10 50,34 62,26 72,30 72,52"/>
+          <polygon class="mtn-area" points="0,52 16,36 26,42 38,10 50,34 62,26 72,30 72,52"/>
           <polyline class="mtn-stroke" points="0,52 16,36 26,42 38,10 50,34 62,26 72,30"/>
-          <circle   class="mtn-peak" cx="38" cy="10" r="2.8"/>
+          <circle class="mtn-peak" cx="38" cy="10" r="2.8"/>
         </svg>
       </div>
-      <div class="mode-text">
-        <span class="mode-label">Swing</span>
-        <span class="mode-name">Ride the Wave</span>
-        <span class="mode-desc">4h–1D · 1–2 Trades<br>Multi-Day Holds</span>
-      </div>
+      <div class="mode-text"><span class="mode-label">Swing</span><span class="mode-name">Ride the Wave</span><span class="mode-desc">4h–1D · 1–2 Trades<br>Multi-Day Holds</span></div>
     </div>
   </div>
-
   <div class="tags">
-    <span class="tag">Long Positions</span>
-    <span class="tag">Short Positions</span>
-    <span class="tag">Market Detection</span>
-    <span class="tag">24/7 Automated</span>
+    <span class="tag">Long Positions</span><span class="tag">Short Positions</span><span class="tag">Market Detection</span><span class="tag">24/7 Automated</span>
   </div>
-
   <div class="links">
     <a href="https://x.com/OTrade666" target="_blank" rel="noopener" class="link-btn">
       <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -540,141 +461,62 @@
       contact@owntrade.org
     </a>
   </div>
-
-  <!-- scroll hint -->
   <div class="scroll-hint" onclick="document.getElementById('product').scrollIntoView({behavior:'smooth'})">
-    <span>SCROLL</span>
-    <div class="scroll-arrow"></div>
+    <span>SCROLL</span><div class="scroll-arrow"></div>
   </div>
 </section>
 
-<!-- ════════════════════════════════
-     ▼  PRODUCT SECTION
-════════════════════════════════ -->
+<!-- ════ PRODUCT ════ -->
 <div id="product">
-
-  <!-- intro bridge -->
   <div class="product-intro">
     <div class="product-intro-label">The Platform</div>
     <h2 class="product-intro-h">Built for serious traders.</h2>
     <p class="product-intro-p">One desktop app — bot, backtester, dashboard. Full control, no cloud, no subscription for core features.</p>
   </div>
-
-  <!-- STATS STRIP -->
   <div class="stats-strip">
     <div class="s-item"><div class="s-num">50.214</div><div class="s-lbl">Orderbook Snapshots</div></div>
     <div class="s-item"><div class="s-num">11</div><div class="s-lbl">Indicators</div></div>
     <div class="s-item"><div class="s-num">55.8%</div><div class="s-lbl">Win Rate (Backtest)</div></div>
     <div class="s-item"><div class="s-num">v3.8</div><div class="s-lbl">Current Version</div></div>
   </div>
-
-  <!-- FEATURES -->
   <div class="pw" style="padding-bottom:0;">
     <div class="sec-tag">What ownTRADE does</div>
     <div class="sec-h">Everything in one app.</div>
     <p class="sec-p">From strategy development to automated execution — ownTRADE covers the complete workflow. No cloud dependency, no hidden fees.</p>
-
     <div class="fgrid">
-
-      <!-- BOT -->
       <div class="fc">
-        <svg class="fc-icon" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="fi1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#c8922a"/></linearGradient><filter id="fg1"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-          <rect width="72" height="72" rx="10" fill="#0f1014" stroke="#1c1d22" stroke-width="1"/>
-          <polygon points="36,8 58,36 36,64 14,36" fill="none" stroke="url(#fi1)" stroke-width="1.5" opacity="0.5"/>
-          <polyline points="14,54 22,44 30,50 36,36 44,28 52,18" fill="none" stroke="url(#fi1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#fg1)"/>
-          <circle cx="52" cy="18" r="3" fill="#f5d980" filter="url(#fg1)"/>
-        </svg>
+        <svg class="fc-icon" viewBox="0 0 72 72"><defs><linearGradient id="fi1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#c8922a"/></linearGradient><filter id="fg1"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="72" height="72" rx="10" fill="#0f1014" stroke="#1c1d22" stroke-width="1"/><polygon points="36,8 58,36 36,64 14,36" fill="none" stroke="url(#fi1)" stroke-width="1.5" opacity="0.5"/><polyline points="14,54 22,44 30,50 36,36 44,28 52,18" fill="none" stroke="url(#fi1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#fg1)"/><circle cx="52" cy="18" r="3" fill="#f5d980" filter="url(#fg1)"/></svg>
         <div class="fc-title">Scalping Bot v3.8</div>
         <p class="fc-desc">Fully automated trading on Binance Futures. Real fill prices, ATR-based SL/TP, trailing stop and score-based signal system with 11 indicators.</p>
       </div>
-
-      <!-- BACKTESTER -->
       <div class="fc">
-        <svg class="fc-icon" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="fi2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#c8922a"/></linearGradient><filter id="fg2"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-          <rect width="72" height="72" rx="10" fill="#0f1014" stroke="#1c1d22" stroke-width="1"/>
-          <rect x="10" y="20" width="52" height="34" rx="3" fill="none" stroke="#1c1d22" stroke-width="1"/>
-          <polyline points="16,46 24,38 30,42 40,28 50,32 58,22" fill="none" stroke="url(#fi2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#fg2)"/>
-          <line x1="10" y1="54" x2="62" y2="54" stroke="url(#fi2)" stroke-width="1" stroke-dasharray="5 3" opacity="0.5"/>
-          <polygon points="40,28 44,36 48,28" fill="#f5d980" opacity="0.85" filter="url(#fg2)"/>
-        </svg>
+        <svg class="fc-icon" viewBox="0 0 72 72"><defs><linearGradient id="fi2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#c8922a"/></linearGradient><filter id="fg2"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="72" height="72" rx="10" fill="#0f1014" stroke="#1c1d22" stroke-width="1"/><rect x="10" y="20" width="52" height="34" rx="3" fill="none" stroke="#1c1d22" stroke-width="1"/><polyline points="16,46 24,38 30,42 40,28 50,32 58,22" fill="none" stroke="url(#fi2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#fg2)"/><line x1="10" y1="54" x2="62" y2="54" stroke="url(#fi2)" stroke-width="1" stroke-dasharray="5 3" opacity="0.5"/><polygon points="40,28 44,36 48,28" fill="#f5d980" opacity="0.85" filter="url(#fg2)"/></svg>
         <div class="fc-title">Backtester</div>
         <p class="fc-desc">50,000+ real orderbook snapshots. Automatic SL/TP optimizer and greedy weight optimizer. Transfer the best values to the bot with one click.</p>
       </div>
-
-      <!-- DASHBOARD -->
       <div class="fc">
-        <svg class="fc-icon" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="fi3" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#c8922a"/></linearGradient><filter id="fg3"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-          <rect width="72" height="72" rx="10" fill="#0f1014" stroke="#1c1d22" stroke-width="1"/>
-          <rect x="10" y="12" width="52" height="34" rx="2" fill="none" stroke="#1c1d22" stroke-width="1"/>
-          <rect x="14" y="16" width="20" height="12" rx="1.5" fill="#161208" stroke="url(#fi3)" stroke-width="1" opacity="0.7"/>
-          <rect x="38" y="16" width="20" height="12" rx="1.5" fill="#161208" stroke="url(#fi3)" stroke-width="1" opacity="0.7"/>
-          <rect x="14" y="32" width="44" height="10" rx="1.5" fill="#161208" stroke="#1c1d22" stroke-width="1"/>
-          <text x="24" y="23.5" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="6" fill="#c8922a" filter="url(#fg3)">PnL</text>
-          <text x="48" y="23.5" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="6" fill="#4ecb82" filter="url(#fg3)">+394</text>
-          <circle cx="36" cy="57" r="4" fill="none" stroke="url(#fi3)" stroke-width="1.5" filter="url(#fg3)"/>
-          <line x1="36" y1="46" x2="36" y2="53" stroke="#c8922a" stroke-width="1" opacity="0.5"/>
-        </svg>
+        <svg class="fc-icon" viewBox="0 0 72 72"><defs><linearGradient id="fi3" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#c8922a"/></linearGradient><filter id="fg3"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="72" height="72" rx="10" fill="#0f1014" stroke="#1c1d22" stroke-width="1"/><rect x="10" y="12" width="52" height="34" rx="2" fill="none" stroke="#1c1d22" stroke-width="1"/><rect x="14" y="16" width="20" height="12" rx="1.5" fill="#161208" stroke="url(#fi3)" stroke-width="1" opacity="0.7"/><rect x="38" y="16" width="20" height="12" rx="1.5" fill="#161208" stroke="url(#fi3)" stroke-width="1" opacity="0.7"/><rect x="14" y="32" width="44" height="10" rx="1.5" fill="#161208" stroke="#1c1d22" stroke-width="1"/><text x="24" y="23.5" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="6" fill="#c8922a" filter="url(#fg3)">PnL</text><text x="48" y="23.5" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="6" fill="#4ecb82" filter="url(#fg3)">+394</text><circle cx="36" cy="57" r="4" fill="none" stroke="url(#fi3)" stroke-width="1.5" filter="url(#fg3)"/><line x1="36" y1="46" x2="36" y2="53" stroke="#c8922a" stroke-width="1" opacity="0.5"/></svg>
         <div class="fc-title">Live Dashboard</div>
         <p class="fc-desc">Real-time overview of PnL, open positions, trades and bot status. Start and stop the bot directly from the Electron desktop app.</p>
       </div>
-
-      <!-- CONFIG -->
       <div class="fc">
-        <svg class="fc-icon" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="fi4" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#c8922a"/></linearGradient><filter id="fg4"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-          <rect width="72" height="72" rx="10" fill="#0f1014" stroke="#1c1d22" stroke-width="1"/>
-          <line x1="14" y1="24" x2="58" y2="24" stroke="#2a2820" stroke-width="6" stroke-linecap="round"/>
-          <line x1="14" y1="36" x2="58" y2="36" stroke="#2a2820" stroke-width="6" stroke-linecap="round"/>
-          <line x1="14" y1="48" x2="58" y2="48" stroke="#2a2820" stroke-width="6" stroke-linecap="round"/>
-          <circle cx="30" cy="24" r="5" fill="#0f1014" stroke="url(#fi4)" stroke-width="1.8" filter="url(#fg4)"/>
-          <circle cx="46" cy="36" r="5" fill="#0f1014" stroke="url(#fi4)" stroke-width="1.8" filter="url(#fg4)"/>
-          <circle cx="24" cy="48" r="5" fill="#0f1014" stroke="url(#fi4)" stroke-width="1.8" filter="url(#fg4)"/>
-        </svg>
+        <svg class="fc-icon" viewBox="0 0 72 72"><defs><linearGradient id="fi4" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#c8922a"/></linearGradient><filter id="fg4"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="72" height="72" rx="10" fill="#0f1014" stroke="#1c1d22" stroke-width="1"/><line x1="14" y1="24" x2="58" y2="24" stroke="#2a2820" stroke-width="6" stroke-linecap="round"/><line x1="14" y1="36" x2="58" y2="36" stroke="#2a2820" stroke-width="6" stroke-linecap="round"/><line x1="14" y1="48" x2="58" y2="48" stroke="#2a2820" stroke-width="6" stroke-linecap="round"/><circle cx="30" cy="24" r="5" fill="#0f1014" stroke="url(#fi4)" stroke-width="1.8" filter="url(#fg4)"/><circle cx="46" cy="36" r="5" fill="#0f1014" stroke="url(#fi4)" stroke-width="1.8" filter="url(#fg4)"/><circle cx="24" cy="48" r="5" fill="#0f1014" stroke="url(#fi4)" stroke-width="1.8" filter="url(#fg4)"/></svg>
         <div class="fc-title">Fully Configurable</div>
         <p class="fc-desc">Position size, leverage, ATR multipliers, indicator weights, min-score, cooldowns — all adjustable via sidebar, transferable directly to the bot.</p>
       </div>
-
-      <!-- SELF-HOSTED -->
       <div class="fc">
-        <svg class="fc-icon" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="fi5" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#c8922a"/></linearGradient><filter id="fg5"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-          <rect width="72" height="72" rx="10" fill="#0f1014" stroke="#1c1d22" stroke-width="1"/>
-          <polygon points="36,10 58,36 36,62 14,36" fill="none" stroke="url(#fi5)" stroke-width="1.5" opacity="0.35"/>
-          <rect x="26" y="24" width="20" height="24" rx="3" fill="#0f1014" stroke="url(#fi5)" stroke-width="1.8" filter="url(#fg5)"/>
-          <line x1="30" y1="31" x2="42" y2="31" stroke="#c8922a" stroke-width="1.2" opacity="0.8"/>
-          <line x1="30" y1="36" x2="42" y2="36" stroke="#c8922a" stroke-width="1.2" opacity="0.6"/>
-          <line x1="30" y1="41" x2="38" y2="41" stroke="#c8922a" stroke-width="1.2" opacity="0.4"/>
-        </svg>
+        <svg class="fc-icon" viewBox="0 0 72 72"><defs><linearGradient id="fi5" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#c8922a"/></linearGradient><filter id="fg5"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="72" height="72" rx="10" fill="#0f1014" stroke="#1c1d22" stroke-width="1"/><polygon points="36,10 58,36 36,62 14,36" fill="none" stroke="url(#fi5)" stroke-width="1.5" opacity="0.35"/><rect x="26" y="24" width="20" height="24" rx="3" fill="#0f1014" stroke="url(#fi5)" stroke-width="1.8" filter="url(#fg5)"/><line x1="30" y1="31" x2="42" y2="31" stroke="#c8922a" stroke-width="1.2" opacity="0.8"/><line x1="30" y1="36" x2="42" y2="36" stroke="#c8922a" stroke-width="1.2" opacity="0.6"/><line x1="30" y1="41" x2="38" y2="41" stroke="#c8922a" stroke-width="1.2" opacity="0.4"/></svg>
         <div class="fc-title">Self-Hosted</div>
         <p class="fc-desc">Runs entirely on your own machine. Your API keys, your data, your control. No external servers required for core functionality.</p>
       </div>
-
-      <!-- ELECTRON -->
       <div class="fc">
-        <svg class="fc-icon" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="fi6" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#c8922a"/></linearGradient><filter id="fg6"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-          <rect width="72" height="72" rx="10" fill="#0f1014" stroke="#1c1d22" stroke-width="1"/>
-          <rect x="10" y="14" width="52" height="36" rx="3" fill="none" stroke="url(#fi6)" stroke-width="1.5" filter="url(#fg6)" opacity="0.7"/>
-          <line x1="10" y1="22" x2="62" y2="22" stroke="url(#fi6)" stroke-width="1" opacity="0.5"/>
-          <circle cx="17" cy="18" r="2" fill="#c8922a" opacity="0.6"/>
-          <circle cx="23" cy="18" r="2" fill="#c8922a" opacity="0.4"/>
-          <circle cx="29" cy="18" r="2" fill="#c8922a" opacity="0.25"/>
-          <polyline points="18,34 26,28 32,32 40,24 50,28" fill="none" stroke="url(#fi6)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" filter="url(#fg6)"/>
-          <circle cx="50" cy="28" r="2.5" fill="#f5d980" filter="url(#fg6)"/>
-        </svg>
+        <svg class="fc-icon" viewBox="0 0 72 72"><defs><linearGradient id="fi6" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#c8922a"/></linearGradient><filter id="fg6"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="72" height="72" rx="10" fill="#0f1014" stroke="#1c1d22" stroke-width="1"/><rect x="10" y="14" width="52" height="36" rx="3" fill="none" stroke="url(#fi6)" stroke-width="1.5" filter="url(#fg6)" opacity="0.7"/><line x1="10" y1="22" x2="62" y2="22" stroke="url(#fi6)" stroke-width="1" opacity="0.5"/><circle cx="17" cy="18" r="2" fill="#c8922a" opacity="0.6"/><circle cx="23" cy="18" r="2" fill="#c8922a" opacity="0.4"/><circle cx="29" cy="18" r="2" fill="#c8922a" opacity="0.25"/><polyline points="18,34 26,28 32,32 40,24 50,28" fill="none" stroke="url(#fi6)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" filter="url(#fg6)"/><circle cx="50" cy="28" r="2.5" fill="#f5d980" filter="url(#fg6)"/></svg>
         <div class="fc-title">Electron Desktop App</div>
         <p class="fc-desc">Netflix-style launcher, dedicated window per tool, seamless IPC communication between UI and Python backend. Ships as a single EXE.</p>
       </div>
-
     </div>
   </div>
-
   <div class="hr-full"></div>
-
-  <!-- BOT SIGNAL MOCK -->
   <div class="pw">
     <div class="tcol">
       <div>
@@ -683,11 +525,7 @@
         <p class="sec-p">The bot combines orderbook, CVD, funding rate, VWAP, EMA, RSI, MACD, Bollinger Bands, volume, staircase and candle analysis into a weighted score. A trade only executes when the score exceeds your minimum threshold.</p>
       </div>
       <div class="term">
-        <div class="tbar">
-          <div class="tdot" style="background:#2a2a2a"></div>
-          <div class="tdot" style="background:#1e1e1e"></div>
-          <div class="tdot" style="background:#8a5f18"></div>
-        </div>
+        <div class="tbar"><div class="tdot" style="background:#2a2a2a"></div><div class="tdot" style="background:#1e1e1e"></div><div class="tdot" style="background:#8a5f18"></div></div>
         <div class="tl"><span class="k">symbol   </span>  BTCUSDT</div>
         <div class="tl"><span class="k">score    </span>  <span class="vg">8.5</span>  / min 7.5</div>
         <div class="tl"><span class="k">signal   </span>  <span class="vg">LONG ▲</span></div>
@@ -701,10 +539,7 @@
       </div>
     </div>
   </div>
-
   <div class="hr-full"></div>
-
-  <!-- BACKTESTER MOCK -->
   <div class="pw">
     <div class="tcol">
       <div class="bt">
@@ -715,10 +550,7 @@
           <div class="bt-s"><div class="bt-sv">269</div><div class="bt-sl">Trades</div></div>
           <div class="bt-s"><div class="bt-sv r">-900</div><div class="bt-sl">Max DD</div></div>
         </div>
-        <div class="bt-eq">
-          <div class="eq-lbl">Equity Curve</div>
-          <canvas id="eqc" style="width:100%;height:72px;display:block"></canvas>
-        </div>
+        <div class="bt-eq"><div class="eq-lbl">Equity Curve</div><canvas id="eqc" style="width:100%;height:72px;display:block"></canvas></div>
       </div>
       <div>
         <div class="sec-tag">Backtester</div>
@@ -727,68 +559,33 @@
       </div>
     </div>
   </div>
-
   <div class="hr-full"></div>
-
-  <!-- TECH STACK -->
   <div class="pw" style="padding-top:3rem;padding-bottom:3rem;">
     <div class="sec-tag">Technology</div>
     <div class="sec-h">Modern Stack.</div>
     <p class="sec-p">Lightweight, fast, fully runnable on Windows. No server. No cloud.</p>
     <div class="pills">
-      <span class="pill hl">Electron v28</span>
-      <span class="pill hl">Python 3.x</span>
-      <span class="pill hl">Binance Futures API</span>
+      <span class="pill hl">Electron v28</span><span class="pill hl">Python 3.x</span><span class="pill hl">Binance Futures API</span>
       <span class="pill">SQLite</span><span class="pill">Canvas API</span><span class="pill">IPC Bridge</span>
       <span class="pill">ATR · EMA · RSI · MACD</span><span class="pill">Orderbook CVD</span>
       <span class="pill">Funding Rate</span><span class="pill">electron-builder</span>
-      <span class="pill">Cinzel · Rajdhani</span><span class="pill">JetBrains Mono</span>
     </div>
   </div>
-
   <div class="hr-full"></div>
-
-  <!-- ROADMAP -->
   <div class="pw">
     <div class="sec-tag">What's coming next</div>
     <div class="sec-h">Roadmap.</div>
     <div class="rm">
-      <div class="rm-row">
-        <div class="rm-badge done">DONE</div>
-        <div>
-          <div class="rm-t">Scalping Bot v3.8 + Backtester</div>
-          <p class="rm-d">Bot, dashboard, backtester with SL/TP + weight optimizer, export, load-to-bot — complete.</p>
-        </div>
-      </div>
-      <div class="rm-row">
-        <div class="rm-badge soon">SOON</div>
-        <div>
-          <div class="rm-t">Scalping Bot 2 — ETHUSDT</div>
-          <p class="rm-d">Second bot for ETHUSDT with its own window, config and trade history.</p>
-        </div>
-      </div>
-      <div class="rm-row">
-        <div class="rm-badge plan">PLANNED</div>
-        <div>
-          <div class="rm-t">Prop Firm Signaler — Telegram</div>
-          <p class="rm-d">Automatic signals via Telegram, IQ Capital rule filter, max drawdown & daily loss limit.</p>
-        </div>
-      </div>
-      <div class="rm-row">
-        <div class="rm-badge plan">PLANNED</div>
-        <div>
-          <div class="rm-t">Live Trading</div>
-          <p class="rm-d">Migration from Binance testnet to live account with full risk management review.</p>
-        </div>
-      </div>
+      <div class="rm-row"><div class="rm-badge done">DONE</div><div><div class="rm-t">Scalping Bot v3.8 + Backtester</div><p class="rm-d">Bot, dashboard, backtester with SL/TP + weight optimizer, export, load-to-bot — complete.</p></div></div>
+      <div class="rm-row"><div class="rm-badge soon">SOON</div><div><div class="rm-t">Scalping Bot 2 — ETHUSDT</div><p class="rm-d">Second bot for ETHUSDT with its own window, config and trade history.</p></div></div>
+      <div class="rm-row"><div class="rm-badge plan">PLANNED</div><div><div class="rm-t">Prop Firm Signaler — Telegram</div><p class="rm-d">Automatic signals via Telegram, IQ Capital rule filter, max drawdown & daily loss limit.</p></div></div>
+      <div class="rm-row"><div class="rm-badge plan">PLANNED</div><div><div class="rm-t">Live Trading</div><p class="rm-d">Migration from Binance testnet to live account with full risk management review.</p></div></div>
     </div>
   </div>
+</div>
 
-</div><!-- /#product -->
-
-<!-- FOOTER -->
 <footer>
-  <svg class="ft-diamond" width="28" height="28" viewBox="0 0 40 40">
+  <svg id="secret-trigger" title="ownTRADE" class="ft-diamond" width="28" height="28" viewBox="0 0 40 40">
     <defs><linearGradient id="fd-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#8a5f18"/></linearGradient></defs>
     <polygon points="20,3 37,20 20,37 3,20" fill="none" stroke="url(#fd-g)" stroke-width="1.5" opacity="0.6"/>
   </svg>
@@ -801,118 +598,605 @@
   <div class="ft-copy">© 2026 OWNTRADE · ALL RIGHTS RESERVED</div>
 </footer>
 
-<!-- ════ SCRIPTS ════ -->
+<!-- ════════════════════════════════════════
+     SECRET SPARPLAN OVERLAY
+════════════════════════════════════════ -->
+<div id="sparplan-overlay">
+  <button class="sp-close" onclick="closeSparplan()">✕ CLOSE</button>
+  <div class="sp-wrap" id="sp-app">
+    <!-- rendered by JS -->
+  </div>
+</div>
+
+<!-- UNLOCK DIALOG -->
+<div id="unlock-overlay" style="display:none;">
+  <div class="unlock-box">
+    <svg width="40" height="40" viewBox="0 0 40 40" style="margin-bottom:1.2rem;">
+      <defs><linearGradient id="ufd" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f5d980"/><stop offset="100%" stop-color="#8a5f18"/></linearGradient></defs>
+      <polygon points="20,3 37,20 20,37 3,20" fill="none" stroke="url(#ufd)" stroke-width="1.5"/>
+      <text x="20" y="24" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#c8922a">💙</text>
+    </svg>
+    <div class="unlock-title">PRIVATE ACCESS</div>
+    <div class="unlock-sub">NUR FÜR TIM & LENA</div>
+    <input class="unlock-input" id="unlock-input" type="password" placeholder="Passwort eingeben" autocomplete="off" onkeydown="if(event.key==='Enter')tryUnlock()"/>
+    <button class="unlock-btn" onclick="tryUnlock()">ZUGANG ANFORDERN</button>
+    <div class="unlock-error" id="unlock-error"></div>
+    <div style="margin-top:1.2rem;font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.1em;color:var(--dim);cursor:pointer;" onclick="closeUnlock()">↩ ZURÜCK</div>
+  </div>
+</div>
+
 <script>
-// ── Typing Effect ──
+// ════════════════════════════════════════════
+// OWNTRADE HOMEPAGE SCRIPTS
+// ════════════════════════════════════════════
+
+// Typing Effect
 const phrases=['AUTOMATED TRADING INTELLIGENCE','PRECISION ENTERS THE MARKET','24/7 · SCALPING · DAYTRADING · SWING','NO SLEEP · NO EMOTIONS · NO MERCY'];
 let pIdx=0,cIdx=0,del=false;
 const typedEl=document.getElementById('typedText');
 function typeLoop(){
   const cur=phrases[pIdx];
-  if(!del){
-    typedEl.textContent=cur.substring(0,cIdx+1);cIdx++;
-    if(cIdx===cur.length){setTimeout(()=>{del=true;typeLoop()},2800);return;}
-    setTimeout(typeLoop,70);
-  } else {
-    typedEl.textContent=cur.substring(0,cIdx-1);cIdx--;
-    if(cIdx===0){del=false;pIdx=(pIdx+1)%phrases.length;setTimeout(typeLoop,450);return;}
-    setTimeout(typeLoop,32);
-  }
+  if(!del){typedEl.textContent=cur.substring(0,cIdx+1);cIdx++;if(cIdx===cur.length){setTimeout(()=>{del=true;typeLoop()},2800);return;}setTimeout(typeLoop,70);}
+  else{typedEl.textContent=cur.substring(0,cIdx-1);cIdx--;if(cIdx===0){del=false;pIdx=(pIdx+1)%phrases.length;setTimeout(typeLoop,450);return;}setTimeout(typeLoop,32);}
 }
 setTimeout(typeLoop,1000);
-
-// ── Tagline ──
 setTimeout(()=>document.getElementById('tl1').classList.add('visible'),1600);
 setTimeout(()=>document.getElementById('tl2').classList.add('visible'),2400);
 
-// ── Ticker ──
+// Ticker
 const tickerData=[
-  {s:'BTC/USDT',v:'+2.41%',up:true},{s:'ETH/USDT',v:'-0.83%',up:false},
-  {s:'SOL/USDT',v:'+5.12%',up:true},{s:'BNB/USDT',v:'+1.24%',up:true},
-  {s:'AAPL',v:'+1.18%',up:true},{s:'TSLA',v:'-3.07%',up:false},
-  {s:'NVDA',v:'+4.72%',up:true},{s:'EUR/USD',v:'+0.31%',up:true},
-  {s:'XAU/USD',v:'+0.89%',up:true},{s:'GBP/USD',v:'-0.22%',up:false},
+  {s:'BTC/USDT',v:'+2.41%',up:true},{s:'ETH/USDT',v:'-0.83%',up:false},{s:'SOL/USDT',v:'+5.12%',up:true},
+  {s:'BNB/USDT',v:'+1.24%',up:true},{s:'AAPL',v:'+1.18%',up:true},{s:'TSLA',v:'-3.07%',up:false},
+  {s:'NVDA',v:'+4.72%',up:true},{s:'EUR/USD',v:'+0.31%',up:true},{s:'XAU/USD',v:'+0.89%',up:true},{s:'GBP/USD',v:'-0.22%',up:false},
 ];
 const tickEl=document.getElementById('ticker');
-let html='';
-for(let i=0;i<3;i++) tickerData.forEach(t=>{
-  html+=`<span class="${t.up?'up':'down'}">${t.s}&nbsp;&nbsp;${t.v}</span><span class="sep">·</span>`;
-});
-tickEl.innerHTML=html;
+let th='';for(let i=0;i<3;i++)tickerData.forEach(t=>{th+=`<span class="${t.up?'up':'down'}">${t.s}&nbsp;&nbsp;${t.v}</span><span class="sep">·</span>`;});
+tickEl.innerHTML=th;
 
-// ── Background Chart ──
+// Background chart
 const canvas=document.getElementById('chartCanvas');
 const ctx=canvas.getContext('2d');
 let W,H,pts=[],csticks=[],off=0;
 function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight*0.4;genData();}
-function genData(){
-  pts=[];csticks=[];let y=H*0.6;
-  for(let i=0;i<=90;i++){y+=(Math.random()-0.51)*10;y=Math.max(H*0.08,Math.min(H*0.92,y));pts.push({x:(i/90)*W,y});}
-  for(let i=0;i<45;i++){
-    const x=(i/45)*W+W*0.005;const idx=Math.floor((i/45)*90);
-    const by=pts[Math.min(idx,pts.length-1)].y;
-    const o=by+(Math.random()-0.5)*20;const c=by+(Math.random()-0.5)*20;
-    const h=Math.min(o,c)-Math.random()*12;const l=Math.max(o,c)+Math.random()*12;
-    csticks.push({x,o,c,h,l,bull:c<o,w:W/45*0.4});
-  }
-}
-function drawChart(){
-  ctx.clearRect(0,0,W,H);off+=0.35;
-  csticks.forEach((c,i)=>{
-    const sh=Math.sin((off+i*7)*0.014)*4;
-    const col=c.bull?'#c8922a':'#8a5f18';
-    ctx.strokeStyle=col;ctx.lineWidth=1.2;
-    ctx.beginPath();ctx.moveTo(c.x,c.h+sh);ctx.lineTo(c.x,c.l+sh);ctx.stroke();
-    ctx.fillStyle=col;ctx.fillRect(c.x-c.w/2,Math.min(c.o,c.c)+sh,c.w,Math.max(Math.abs(c.c-c.o),2));
-  });
-  ctx.beginPath();
-  pts.forEach((p,i)=>{const sh=Math.sin((off+i*5)*0.016)*5;if(i===0)ctx.moveTo(p.x,p.y+sh);else ctx.lineTo(p.x,p.y+sh);});
-  ctx.strokeStyle='#c8922a';ctx.lineWidth=2;ctx.stroke();
-  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
-  const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'rgba(200,146,42,0.12)');g.addColorStop(1,'rgba(200,146,42,0)');
-  ctx.fillStyle=g;ctx.fill();
-  requestAnimationFrame(drawChart);
-}
+function genData(){pts=[];csticks=[];let y=H*0.6;for(let i=0;i<=90;i++){y+=(Math.random()-0.51)*10;y=Math.max(H*0.08,Math.min(H*0.92,y));pts.push({x:(i/90)*W,y});}for(let i=0;i<45;i++){const x=(i/45)*W+W*0.005;const idx=Math.floor((i/45)*90);const by=pts[Math.min(idx,pts.length-1)].y;const o=by+(Math.random()-0.5)*20;const c=by+(Math.random()-0.5)*20;const h2=Math.min(o,c)-Math.random()*12;const l=Math.max(o,c)+Math.random()*12;csticks.push({x,o,c,h:h2,l,bull:c<o,w:W/45*0.4});}}
+function drawChart(){ctx.clearRect(0,0,W,H);off+=0.35;csticks.forEach((c,i)=>{const sh=Math.sin((off+i*7)*0.014)*4;const col=c.bull?'#c8922a':'#8a5f18';ctx.strokeStyle=col;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(c.x,c.h+sh);ctx.lineTo(c.x,c.l+sh);ctx.stroke();ctx.fillStyle=col;ctx.fillRect(c.x-c.w/2,Math.min(c.o,c.c)+sh,c.w,Math.max(Math.abs(c.c-c.o),2));});ctx.beginPath();pts.forEach((p,i)=>{const sh=Math.sin((off+i*5)*0.016)*5;if(i===0)ctx.moveTo(p.x,p.y+sh);else ctx.lineTo(p.x,p.y+sh);});ctx.strokeStyle='#c8922a';ctx.lineWidth=2;ctx.stroke();ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(200,146,42,0.12)');g.addColorStop(1,'rgba(200,146,42,0)');ctx.fillStyle=g;ctx.fill();requestAnimationFrame(drawChart);}
 
-// ── Mouse Trail ──
+// Mouse trail
 const tCanvas=document.getElementById('trailCanvas');
 const tCtx=tCanvas.getContext('2d');
 let trails=[];
 document.addEventListener('mousemove',e=>{trails.push({x:e.clientX,y:e.clientY,life:1});if(trails.length>40)trails.shift();});
-function drawTrail(){
-  tCtx.clearRect(0,0,tCanvas.width,tCanvas.height);
-  tCanvas.width=window.innerWidth;tCanvas.height=window.innerHeight;
-  trails=trails.filter(t=>t.life>0);
-  trails.forEach(t=>{t.life-=0.03;tCtx.beginPath();tCtx.arc(t.x,t.y,2*t.life,0,Math.PI*2);tCtx.fillStyle=`rgba(200,146,42,${t.life*0.2})`;tCtx.fill();});
-  requestAnimationFrame(drawTrail);
-}
+function drawTrail(){tCtx.clearRect(0,0,tCanvas.width,tCanvas.height);tCanvas.width=window.innerWidth;tCanvas.height=window.innerHeight;trails=trails.filter(t=>t.life>0);trails.forEach(t=>{t.life-=0.03;tCtx.beginPath();tCtx.arc(t.x,t.y,2*t.life,0,Math.PI*2);tCtx.fillStyle=`rgba(200,146,42,${t.life*0.2})`;tCtx.fill();});requestAnimationFrame(drawTrail);}
 
-// ── Equity Canvas ──
+// Equity canvas
 window.addEventListener('load',()=>{
-  const c=document.getElementById('eqc');
-  if(!c)return;
-  c.width=c.offsetWidth*2;c.height=144;
-  const CW=c.width,CH=c.height;
-  const ectx=c.getContext('2d');
+  const c=document.getElementById('eqc');if(!c)return;
+  c.width=c.offsetWidth*2;c.height=144;const CW=c.width,CH=c.height;const ectx=c.getContext('2d');
   const pts2=[0,30,20,55,40,25,60,80,50,90,70,100,85,75,110,130,105,125,140,160,145,150,165,185,180,170,200,220,210];
-  const mn=Math.min(...pts2),mx=Math.max(...pts2);
-  const nv=v=>CH-10-((v-mn)/(mx-mn))*(CH-20);
-  const xs=CW/(pts2.length-1);
-  const grad=ectx.createLinearGradient(0,0,0,CH);
-  grad.addColorStop(0,'rgba(78,203,130,0.15)');grad.addColorStop(1,'rgba(78,203,130,0)');
-  ectx.beginPath();pts2.forEach((v,i)=>i===0?ectx.moveTo(0,nv(v)):ectx.lineTo(i*xs,nv(v)));
-  ectx.lineTo(CW,CH);ectx.lineTo(0,CH);ectx.closePath();ectx.fillStyle=grad;ectx.fill();
-  ectx.strokeStyle='#4ecb82';ectx.lineWidth=2.5;
-  ectx.beginPath();pts2.forEach((v,i)=>i===0?ectx.moveTo(0,nv(v)):ectx.lineTo(i*xs,nv(v)));ectx.stroke();
-  ectx.strokeStyle='rgba(200,146,42,0.5)';ectx.lineWidth=1.8;ectx.setLineDash([7,5]);
-  ectx.beginPath();const op=pts2.map((v,i)=>v+Math.sin(i*.7)*14+i*.6);
-  op.forEach((v,i)=>i===0?ectx.moveTo(0,nv(v)):ectx.lineTo(i*xs,nv(v)));
-  ectx.stroke();ectx.setLineDash([]);
+  const mn=Math.min(...pts2),mx=Math.max(...pts2);const nv=v=>CH-10-((v-mn)/(mx-mn))*(CH-20);const xs=CW/(pts2.length-1);
+  const grad=ectx.createLinearGradient(0,0,0,CH);grad.addColorStop(0,'rgba(78,203,130,0.15)');grad.addColorStop(1,'rgba(78,203,130,0)');
+  ectx.beginPath();pts2.forEach((v,i)=>i===0?ectx.moveTo(0,nv(v)):ectx.lineTo(i*xs,nv(v)));ectx.lineTo(CW,CH);ectx.lineTo(0,CH);ectx.closePath();ectx.fillStyle=grad;ectx.fill();
+  ectx.strokeStyle='#4ecb82';ectx.lineWidth=2.5;ectx.beginPath();pts2.forEach((v,i)=>i===0?ectx.moveTo(0,nv(v)):ectx.lineTo(i*xs,nv(v)));ectx.stroke();
+  ectx.strokeStyle='rgba(200,146,42,0.5)';ectx.lineWidth=1.8;ectx.setLineDash([7,5]);const op=pts2.map((v,i)=>v+Math.sin(i*.7)*14+i*.6);op.forEach((v,i)=>i===0?ectx.moveTo(0,nv(v)):ectx.lineTo(i*xs,nv(v)));ectx.stroke();ectx.setLineDash([]);
 });
 
 window.addEventListener('resize',()=>{resize();tCanvas.width=window.innerWidth;tCanvas.height=window.innerHeight;});
 resize();drawChart();drawTrail();
+
+// ════════════════════════════════════════════
+// SECRET SPARPLAN ACCESS
+// ════════════════════════════════════════════
+// Change this password to whatever you want!
+const SP_PASSWORD = "timlena2026";
+let clickCount = 0;
+let clickTimer = null;
+let spUnlocked = sessionStorage.getItem('sp_unlocked') === '1';
+
+document.getElementById('secret-trigger').addEventListener('click', () => {
+  clickCount++;
+  clearTimeout(clickTimer);
+  clickTimer = setTimeout(() => { clickCount = 0; }, 1500);
+  if (clickCount >= 3) {
+    clickCount = 0;
+    if (spUnlocked) { openSparplan(); }
+    else { document.getElementById('unlock-overlay').style.display = 'flex'; document.getElementById('unlock-input').focus(); }
+  }
+});
+
+function tryUnlock() {
+  const val = document.getElementById('unlock-input').value;
+  if (val === SP_PASSWORD) {
+    sessionStorage.setItem('sp_unlocked', '1');
+    spUnlocked = true;
+    document.getElementById('unlock-overlay').style.display = 'none';
+    document.getElementById('unlock-input').value = '';
+    document.getElementById('unlock-error').textContent = '';
+    openSparplan();
+  } else {
+    document.getElementById('unlock-error').textContent = '✕ Falsches Passwort';
+    document.getElementById('unlock-input').value = '';
+    document.getElementById('unlock-input').focus();
+    setTimeout(() => { document.getElementById('unlock-error').textContent = ''; }, 2000);
+  }
+}
+
+function closeUnlock() {
+  document.getElementById('unlock-overlay').style.display = 'none';
+  document.getElementById('unlock-input').value = '';
+  document.getElementById('unlock-error').textContent = '';
+}
+
+function openSparplan() {
+  document.getElementById('sparplan-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if (!spInitialized) { initSparplan(); spInitialized = true; }
+}
+
+function closeSparplan() {
+  document.getElementById('sparplan-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+}
+
+// ════════════════════════════════════════════
+// SPARPLAN APP
+// ════════════════════════════════════════════
+const SURL="https://jykyucfvwzjpzdlhadre.supabase.co";
+const SKEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5a3l1Y2Z2d3pqcHpkbGhhZHJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzEwODMsImV4cCI6MjA4ODc0NzA4M30.XuV-UwXvqsFgdyMYT_YxOnd5ZGH1m15an14xCcZN5RI";
+const GOAL=3000, MR=0.036/12;
+const MO=["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+const COL={Tim:"#38bdf8",Lena:"#f472b6"};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
+const fmt=n=>Number(n).toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtS=n=>Number(n).toLocaleString("de-DE",{minimumFractionDigits:0,maximumFractionDigits:0});
+
+const h=(tag,attrs,...kids)=>{
+  const e=document.createElement(tag);
+  for(const[k,v]of Object.entries(attrs||{})){
+    if(k==="style"&&typeof v==="object")Object.assign(e.style,v);
+    else if(k.startsWith("on"))e.addEventListener(k.slice(2).toLowerCase(),v);
+    else e.setAttribute(k,v);
+  }
+  for(const c of kids){if(c==null||c===false)continue;e.appendChild(typeof c==="string"||typeof c==="number"?document.createTextNode(String(c)):c);}
+  return e;
+};
+
+const sb={
+  async all(){const r=await fetch(`${SURL}/rest/v1/deposits?select=*&order=year.asc,month.asc`,{headers:{apikey:SKEY,Authorization:`Bearer ${SKEY}`}});return r.ok?r.json():[];},
+  async add(d){const r=await fetch(`${SURL}/rest/v1/deposits`,{method:"POST",headers:{apikey:SKEY,Authorization:`Bearer ${SKEY}`,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify(d)});return r.ok;},
+  async del(id){await fetch(`${SURL}/rest/v1/deposits?id=eq.${id}`,{method:"DELETE",headers:{apikey:SKEY,Authorization:`Bearer ${SKEY}`}});}
+};
+
+function calcVal(deps,asOf=new Date()){
+  return deps.reduce((s,d)=>{const dd=new Date(d.year,d.month-1,15);const m=Math.max(0,(asOf.getFullYear()-dd.getFullYear())*12+(asOf.getMonth()-dd.getMonth()));return s+d.amount*Math.pow(1+MR,m);},0);
+}
+
+function spawnConfetti(){
+  const emojis=["🎉","✨","🌟","💫","🎊","🥳"];
+  for(let i=0;i<10;i++){setTimeout(()=>{const p=document.createElement("div");p.textContent=emojis[Math.floor(Math.random()*emojis.length)];p.style.cssText=`position:fixed;left:${10+Math.random()*80}%;top:${20+Math.random()*40}%;font-size:${14+Math.random()*16}px;z-index:9998;pointer-events:none;animation:confetti ${0.8+Math.random()*0.8}s ease forwards`;document.body.appendChild(p);setTimeout(()=>p.remove(),1600);},i*80);}
+}
+
+function svgLine(data,keys,colors,W=620,H=200){
+  const pl=55,pr=10,pt=10,pb=30,cw=W-pl-pr,ch=H-pt-pb;
+  const allV=data.flatMap(d=>keys.map(k=>d[k]||0));
+  const maxV=Math.max(...allV)*1.05||100;
+  const xs=i=>(i/(data.length-1||1))*cw;
+  const ys=v=>ch-((v/maxV))*ch;
+  const s=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  s.setAttribute("width","100%");s.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  for(let i=0;i<=4;i++){const y=pt+(ch/4)*i,val=maxV-(maxV/4)*i;const l=document.createElementNS("http://www.w3.org/2000/svg","line");l.setAttribute("x1",pl);l.setAttribute("x2",pl+cw);l.setAttribute("y1",y);l.setAttribute("y2",y);l.setAttribute("stroke","#1c1d22");l.setAttribute("stroke-dasharray","3,4");s.appendChild(l);const t=document.createElementNS("http://www.w3.org/2000/svg","text");t.setAttribute("x",pl-4);t.setAttribute("y",y+4);t.setAttribute("text-anchor","end");t.setAttribute("fill","#4a4d58");t.setAttribute("font-size","9");t.setAttribute("font-family","monospace");t.textContent=`€${fmtS(val)}`;s.appendChild(t);}
+  keys.forEach((k,ki)=>{
+    const pts=data.map((d,i)=>({x:pl+xs(i),y:pt+ys(d[k]||0)}));
+    const gradId=`spgrad_${ki}_${Math.random().toString(36).slice(2)}`;
+    const defs=document.createElementNS("http://www.w3.org/2000/svg","defs");const grad=document.createElementNS("http://www.w3.org/2000/svg","linearGradient");grad.setAttribute("id",gradId);grad.setAttribute("x1","0");grad.setAttribute("y1","0");grad.setAttribute("x2","0");grad.setAttribute("y2","1");
+    const s1=document.createElementNS("http://www.w3.org/2000/svg","stop");s1.setAttribute("offset","0%");s1.setAttribute("stop-color",colors[ki]);s1.setAttribute("stop-opacity","0.25");const s2=document.createElementNS("http://www.w3.org/2000/svg","stop");s2.setAttribute("offset","100%");s2.setAttribute("stop-color",colors[ki]);s2.setAttribute("stop-opacity","0");grad.appendChild(s1);grad.appendChild(s2);defs.appendChild(grad);s.appendChild(defs);
+    const a=document.createElementNS("http://www.w3.org/2000/svg","path");let dp=`M ${pts[0].x} ${pt+ch}`;pts.forEach(p=>dp+=` L ${p.x} ${p.y}`);dp+=` L ${pts[pts.length-1].x} ${pt+ch} Z`;a.setAttribute("d",dp);a.setAttribute("fill",`url(#${gradId})`);s.appendChild(a);
+    const l2=document.createElementNS("http://www.w3.org/2000/svg","path");let lp=`M ${pts[0].x} ${pts[0].y}`;for(let i=1;i<pts.length;i++){const mx=(pts[i-1].x+pts[i].x)/2;lp+=` C ${mx} ${pts[i-1].y}, ${mx} ${pts[i].y}, ${pts[i].x} ${pts[i].y}`;}l2.setAttribute("d",lp);l2.setAttribute("fill","none");l2.setAttribute("stroke",colors[ki]);l2.setAttribute("stroke-width","2");l2.setAttribute("stroke-linecap","round");s.appendChild(l2);
+    if(pts.length>0){const last=pts[pts.length-1];const dot=document.createElementNS("http://www.w3.org/2000/svg","circle");dot.setAttribute("cx",last.x);dot.setAttribute("cy",last.y);dot.setAttribute("r","4");dot.setAttribute("fill",colors[ki]);dot.setAttribute("stroke","#07080a");dot.setAttribute("stroke-width","2");s.appendChild(dot);}
+  });
+  const step=Math.ceil(data.length/5);
+  data.forEach((d,i)=>{if(i%step!==0&&i!==data.length-1)return;const t=document.createElementNS("http://www.w3.org/2000/svg","text");t.setAttribute("x",pl+xs(i));t.setAttribute("y",H-8);t.setAttribute("text-anchor","middle");t.setAttribute("fill","#4a4d58");t.setAttribute("font-size","9");t.setAttribute("font-family","monospace");t.textContent=d.label;s.appendChild(t);});
+  return s;
+}
+
+function svgBar(data,keys,colors,W=620,H=120){
+  const pl=45,pr=10,pt=10,pb=30,cw=W-pl-pr,ch=H-pt-pb;
+  const allV=data.flatMap(d=>keys.map(k=>d[k]||0));const maxV=Math.max(...allV)*1.1||100;
+  const bw=(cw/data.length)/(keys.length+1.5);
+  const s=document.createElementNS("http://www.w3.org/2000/svg","svg");s.setAttribute("width","100%");s.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  const bl=document.createElementNS("http://www.w3.org/2000/svg","line");bl.setAttribute("x1",pl);bl.setAttribute("x2",pl+cw);bl.setAttribute("y1",pt+ch);bl.setAttribute("y2",pt+ch);bl.setAttribute("stroke","#1c1d22");s.appendChild(bl);
+  data.forEach((d,i)=>{
+    const gx=pl+(cw/data.length)*i+bw*0.5;
+    keys.forEach((k,ki)=>{
+      const v=d[k]||0,bh=(v/maxV)*ch;
+      const gradId=`spbg_${ki}_${i}`;const defs=document.createElementNS("http://www.w3.org/2000/svg","defs");const grad=document.createElementNS("http://www.w3.org/2000/svg","linearGradient");grad.setAttribute("id",gradId);grad.setAttribute("x1","0");grad.setAttribute("y1","0");grad.setAttribute("x2","0");grad.setAttribute("y2","1");
+      const s1=document.createElementNS("http://www.w3.org/2000/svg","stop");s1.setAttribute("offset","0%");s1.setAttribute("stop-color",colors[ki]);s1.setAttribute("stop-opacity","0.85");const s2=document.createElementNS("http://www.w3.org/2000/svg","stop");s2.setAttribute("offset","100%");s2.setAttribute("stop-color",colors[ki]);s2.setAttribute("stop-opacity","0.35");grad.appendChild(s1);grad.appendChild(s2);defs.appendChild(grad);s.appendChild(defs);
+      const r=document.createElementNS("http://www.w3.org/2000/svg","rect");r.setAttribute("x",gx+ki*(bw+2));r.setAttribute("y",pt+ch-bh);r.setAttribute("width",bw);r.setAttribute("height",bh||0);r.setAttribute("fill",`url(#${gradId})`);r.setAttribute("rx","2");s.appendChild(r);
+    });
+    const t=document.createElementNS("http://www.w3.org/2000/svg","text");t.setAttribute("x",gx+(bw+1));t.setAttribute("y",H-8);t.setAttribute("text-anchor","middle");t.setAttribute("fill","#4a4d58");t.setAttribute("font-size","9");t.setAttribute("font-family","monospace");t.textContent=d.label;s.appendChild(t);
+  });
+  return s;
+}
+
+// State
+let spDeps=[],spTab="overview",spShowForm=false,spPerson="Tim",spAmount="",spMonth=new Date().getMonth()+1,spYear=new Date().getFullYear(),spNote="",spDelId=null,spExtra=100,spLoading=true,spInitialized=false;
+let activities=[],pickedActivity=null,goals=[],goalDeleteId=null,showGoalForm=false;
+let newGoalName="",newGoalEmoji="✈️",newGoalBudget=500,newGoalLat=20,newGoalLng=15;
+let leafletMap=null;
+
+const DEFAULT_ACTIVITIES=["Minigolf spielen","Kino Abend","Wandern gehen","Neues Restaurant ausprobieren","Bowling","Spieleabend","Tagesausflug","Fahrrad Tour","Picknick im Park","Museum besuchen","Kochen Kurs","Konzert besuchen","Zoo Besuch","Escape Room","Karaoke Abend","Spontan Wochenende","Sonnenuntergang schauen","Flohmarkt besuchen","Kletterpark","Bouldern"];
+const DEFAULT_GOALS=[{id:"goal_japan",name:"Japan",emoji:"🗾",budget:2000,lat:36,lng:138,tasks:["Flüge buchen","Hotel buchen","JR Pass bestellen"],unlocked:false,tasksDone:[]},{id:"goal_newyork",name:"New York",emoji:"🗽",budget:1500,lat:40.7,lng:-74,tasks:["Flüge buchen","Airbnb reservieren","Broadway Tickets"],unlocked:false,tasksDone:[]},{id:"goal_malediven",name:"Malediven",emoji:"🏝️",budget:3000,lat:4,lng:73,tasks:["Flüge buchen","Resort buchen","Schnorchelausrüstung"],unlocked:false,tasksDone:[]},{id:"goal_barcelona",name:"Barcelona",emoji:"🌞",budget:800,lat:41.4,lng:2.2,tasks:["Flüge buchen","Hotel buchen","Sagrada Família Tickets"],unlocked:false,tasksDone:[]},{id:"goal_island",name:"Island",emoji:"🌋",budget:1200,lat:64.9,lng:-18,tasks:["Flüge buchen","Mietwagen buchen","Nordlichter Tour"],unlocked:false,tasksDone:[]}];
+
+const sbAct={
+  async all(){try{const r=await fetch(`${SURL}/rest/v1/activities?select=*&order=name.asc`,{headers:{apikey:SKEY,Authorization:`Bearer ${SKEY}`}});if(r.ok)return r.json();}catch(e){}return null;},
+  async save(a){await fetch(`${SURL}/rest/v1/activities?id=eq.${a.id}`,{method:"DELETE",headers:{apikey:SKEY,Authorization:`Bearer ${SKEY}`}});await fetch(`${SURL}/rest/v1/activities`,{method:"POST",headers:{apikey:SKEY,Authorization:`Bearer ${SKEY}`,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify(a)});},
+  async del(id){await fetch(`${SURL}/rest/v1/activities?id=eq.${id}`,{method:"DELETE",headers:{apikey:SKEY,Authorization:`Bearer ${SKEY}`}});}
+};
+const sbGoals={
+  async all(){try{const r=await fetch(`${SURL}/rest/v1/goals?select=*`,{headers:{apikey:SKEY,Authorization:`Bearer ${SKEY}`}});if(r.ok)return r.json();}catch(e){}return null;},
+  async save(g){await fetch(`${SURL}/rest/v1/goals?id=eq.${g.id}`,{method:"DELETE",headers:{apikey:SKEY,Authorization:`Bearer ${SKEY}`}});await fetch(`${SURL}/rest/v1/goals`,{method:"POST",headers:{apikey:SKEY,Authorization:`Bearer ${SKEY}`,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify(g)});},
+  async del(id){await fetch(`${SURL}/rest/v1/goals?id=eq.${id}`,{method:"DELETE",headers:{apikey:SKEY,Authorization:`Bearer ${SKEY}`}});}
+};
+
+async function loadAct(){try{const r=await sbAct.all();if(r&&r.length>0){activities=r;return;}}catch(e){}const loc=localStorage.getItem("sp_activities");if(loc){try{activities=JSON.parse(loc);return;}catch(e){}}activities=DEFAULT_ACTIVITIES.map(name=>({id:uid(),name,done:false,doneAt:null}));}
+async function loadGoalsData(){try{const r=await sbGoals.all();if(r&&r.length>0){goals=r.map(g=>({...g,tasks:JSON.parse(g.tasks||"[]"),tasksDone:JSON.parse(g.tasksDone||"[]")}));return;}}catch(e){}const loc=localStorage.getItem("sp_goals");if(loc){try{goals=JSON.parse(loc);return;}catch(e){}}goals=[...DEFAULT_GOALS];}
+
+function saveAct(){localStorage.setItem("sp_activities",JSON.stringify(activities));}
+function saveGoalsLocal(){localStorage.setItem("sp_goals",JSON.stringify(goals));}
+function isUnlocked(g,total){return total>=g.budget&&g.tasks.every(t=>g.tasksDone.includes(t));}
+
+async function toggleTask(goalId,task,total){
+  const g=goals.find(x=>x.id===goalId);if(!g)return;
+  if(g.tasksDone.includes(task))g.tasksDone=g.tasksDone.filter(t=>t!==task);
+  else g.tasksDone=[...g.tasksDone,task];
+  g.unlocked=isUnlocked(g,total);
+  await sbGoals.save({...g,tasks:JSON.stringify(g.tasks),tasksDone:JSON.stringify(g.tasksDone)});
+  saveGoalsLocal();if(g.unlocked)spawnConfetti();
+  spRender();
+}
+
+async function initSparplan(){
+  spLoading=true;spRender();
+  try{
+    const [d]=await Promise.all([sb.all(),loadAct(),loadGoalsData()]);
+    spDeps=d||[];
+  }catch(e){spDeps=[];}
+  spLoading=false;spRender();
+}
+
+function addMapMarkers(map,goals,total){
+  goals.forEach(g=>{
+    const unlocked=isUnlocked(g,total);
+    const budgetPct=Math.min(total/g.budget*100,100);
+    const iconHtml=`<div style="width:34px;height:34px;border-radius:50%;background:${unlocked?'#030a03':'#0f1014'};border:2px solid ${unlocked?'#2dcc7a':'#252629'};display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;box-shadow:${unlocked?'0 0 12px rgba(45,204,122,0.4)':'0 2px 8px #00000099'};filter:${unlocked?'none':'grayscale(0.8) brightness(0.5)'}">${unlocked?g.emoji:'🔒'}</div>`;
+    const icon=L.divIcon({html:iconHtml,className:'',iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-20]});
+    const marker=L.marker([g.lat,g.lng],{icon}).addTo(map);
+    const statusColor=unlocked?'#2dcc7a':total>=g.budget?'#c8922a':'#4a4d58';
+    const statusText=unlocked?'✅ FREIGESCHALTET':total>=g.budget?'⏳ Fast geschafft!':'🔒 Gesperrt';
+    marker.bindPopup(`<div style="min-width:155px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:20px">${g.emoji}</span><div><div style="font-family:'Cinzel',serif;font-size:16px;color:#f5d980">${g.name}</div><div style="color:${statusColor};font-size:10px;letter-spacing:.1em">${statusText}</div></div></div><div style="color:#4a4d58;font-size:10px;margin-bottom:4px">💰 SPARZIEL</div><div style="height:4px;background:#111;border-radius:2px;margin-bottom:4px;overflow:hidden"><div style="height:100%;width:${budgetPct}%;background:${total>=g.budget?'#2dcc7a':'#c8922a'};border-radius:2px"></div></div><div style="color:#8a8d98;font-size:11px">€${fmtS(total)} / €${g.budget.toLocaleString('de-DE')}</div></div>`,{className:'goal-popup'});
+  });
+}
+
+function initOrUpdateMap(goals,total){
+  if(leafletMap){leafletMap.eachLayer(l=>{if(l instanceof L.Marker)leafletMap.removeLayer(l);});addMapMarkers(leafletMap,goals,total);return;}
+  leafletMap=L.map('travel-map',{center:[20,15],zoom:2,minZoom:1,maxZoom:10,zoomControl:true,attributionControl:true});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',subdomains:'abcd',maxZoom:19}).addTo(leafletMap);
+  addMapMarkers(leafletMap,goals,total);
+}
+
+function spRender(){
+  if(leafletMap){leafletMap.remove();leafletMap=null;}
+  const app=document.getElementById("sp-app");app.innerHTML="";
+  if(spLoading){
+    app.appendChild(h("div",{style:{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:"16px"}},
+      h("div",{style:{fontFamily:"'Cinzel',serif",fontSize:"20px",color:"var(--gold)",letterSpacing:".2em",animation:"badgePulse 2s ease-in-out infinite"}},"LADE DATEN"),
+      h("div",{style:{width:"120px",height:"2px",background:"var(--border)",borderRadius:"1px",overflow:"hidden"}},h("div",{style:{width:"40%",height:"100%",background:"var(--gold)",borderRadius:"1px",animation:"shimmer 1.5s ease-in-out infinite"}}))
+    ));return;
+  }
+
+  const tD=spDeps.filter(d=>d.person==="Tim"),lD=spDeps.filter(d=>d.person==="Lena");
+  const tV=calcVal(tD),lV=calcVal(lD),total=tV+lV;
+  const tDep=tD.reduce((a,d)=>a+d.amount,0),lDep=lD.reduce((a,d)=>a+d.amount,0),totDep=tDep+lDep;
+  const interest=total-totDep,prog=Math.min(total/GOAL*100,100);
+
+  // ── HEADER ──
+  const hdr=h("div",{style:{marginBottom:"32px",paddingTop:"8px"}});
+  hdr.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".3em",color:"var(--dim)",marginBottom:"6px"}},"XTRACKERS II EUR OVERNIGHT RATE — PRIVAT"));
+  hdr.appendChild(h("h1",{style:{fontFamily:"'Cinzel',serif",fontSize:"clamp(2rem,8vw,3.5rem)",fontWeight:"700",letterSpacing:".04em",lineHeight:"1",marginBottom:"6px"}},
+    h("span",{style:{color:COL.Tim}},"TIM"),h("span",{style:{color:"var(--border2)",margin:"0 10px"}},"&"),h("span",{style:{color:COL.Lena}},"LENA")
+  ));
+  hdr.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"11px",color:"var(--dim)"}},
+    "Ziel: ",h("span",{style:{color:"var(--white)"}},"€3.000")," · ",h("span",{style:{color:"var(--green)"}},"3.6% p.a.")
+  ));
+
+  const addBtn=h("button",{class:"sp-btn",style:{background:spShowForm?"var(--surface)":"linear-gradient(135deg,#f472b6,#a855f7)",border:spShowForm?"1px solid var(--border2)":"none",color:spShowForm?"var(--dim)":"var(--white)",padding:"11px 20px",fontSize:"11px",fontWeight:"700",letterSpacing:".12em",marginTop:"12px"},onclick:()=>{spShowForm=!spShowForm;spRender();}},spShowForm?"✕ ABBRECHEN":"+ EINZAHLUNG");
+  hdr.appendChild(addBtn);app.appendChild(hdr);
+
+  // ── FORM ──
+  if(spShowForm){
+    const amtI=h("input",{type:"number",value:spAmount,placeholder:"50",style:{width:"100%",background:"#030405",border:"1px solid var(--border2)",borderRadius:"4px",color:"var(--white)",padding:"9px 12px",fontSize:"13px",fontFamily:"'JetBrains Mono',monospace"},oninput:e=>spAmount=e.target.value});
+    const noteI=h("input",{type:"text",value:spNote,placeholder:"z.B. Monatsrate März",style:{width:"100%",background:"#030405",border:"1px solid var(--border2)",borderRadius:"4px",color:"var(--text)",padding:"9px 12px",fontSize:"12px",fontFamily:"'JetBrains Mono',monospace"},oninput:e=>spNote=e.target.value});
+    const mSel=h("select",{style:{width:"100%",background:"#030405",border:"1px solid var(--border2)",borderRadius:"4px",color:"var(--white)",padding:"9px 12px",fontSize:"12px",fontFamily:"'JetBrains Mono',monospace"},onchange:e=>spMonth=parseInt(e.target.value)},...MO.map((m,i)=>{const o=h("option",{value:i+1},m);if(i+1===spMonth)o.selected=true;return o;}));
+    const ySel=h("select",{style:{width:"100%",background:"#030405",border:"1px solid var(--border2)",borderRadius:"4px",color:"var(--white)",padding:"9px 12px",fontSize:"12px",fontFamily:"'JetBrains Mono',monospace"},onchange:e=>spYear=parseInt(e.target.value)},...[2024,2025,2026,2027,2028].map(y=>{const o=h("option",{value:y},y);if(y===spYear)o.selected=true;return o;}));
+    const form=h("div",{style:{background:"var(--surface)",border:"1px solid rgba(200,146,42,.2)",borderRadius:"10px",padding:"22px",marginBottom:"20px",animation:"slideUp .2s ease"}});
+    form.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".2em",color:"var(--gold)",marginBottom:"16px"}},"💰 NEUE EINZAHLUNG"));
+    form.appendChild(h("div",{style:{marginBottom:"14px"}},
+      h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".15em",color:"var(--dim)",marginBottom:"7px"}},"WER ZAHLT EIN?"),
+      h("div",{style:{display:"flex",gap:"10px"}},...["Tim","Lena"].map(p=>h("button",{class:"sp-btn",style:{flex:"1",padding:"11px",fontFamily:"'Cinzel',serif",fontSize:"18px",border:`2px solid ${spPerson===p?COL[p]:"var(--border)"}`,background:spPerson===p?COL[p]+"22":"var(--bg2)",color:spPerson===p?COL[p]:"var(--dim)"},onclick:()=>{spPerson=p;spRender();}},p)))
+    ));
+    form.appendChild(h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"10px",marginBottom:"12px"}},
+      h("div",{},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".1em",color:"var(--dim)",marginBottom:"5px"}},"BETRAG (€)"),amtI),
+      h("div",{},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".1em",color:"var(--dim)",marginBottom:"5px"}},"MONAT"),mSel),
+      h("div",{},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".1em",color:"var(--dim)",marginBottom:"5px"}},"JAHR"),ySel)
+    ));
+    form.appendChild(h("div",{style:{marginBottom:"14px"}},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".1em",color:"var(--dim)",marginBottom:"5px"}},"NOTIZ (optional)"),noteI));
+    form.appendChild(h("button",{class:"sp-btn",style:{width:"100%",background:`linear-gradient(135deg,${COL[spPerson]}cc,${COL[spPerson]}66)`,color:"var(--white)",padding:"13px",fontSize:"12px",fontWeight:"700",letterSpacing:".1em"},onclick:async()=>{
+      if(!spAmount||isNaN(spAmount))return;
+      const dep={id:uid(),person:spPerson,amount:parseFloat(spAmount),month:spMonth,year:spYear,note:spNote||""};
+      const ok=await sb.add(dep);
+      if(ok){spDeps.push(dep);spAmount="";spNote="";spShowForm=false;}
+      spRender();
+      if(ok){const t=h("div",{style:{position:"fixed",top:"50px",right:"20px",background:"var(--surface)",border:"1px solid rgba(45,204,122,.3)",borderRadius:"8px",padding:"14px 20px",color:"var(--green)",fontSize:"12px",zIndex:"999",fontFamily:"'JetBrains Mono',monospace",animation:"slideUp .3s ease"}},`✅ +€${parseFloat(dep.amount).toFixed(2)} gespeichert!`);document.body.appendChild(t);setTimeout(()=>t.remove(),2800);}
+    }},"💾 EINZAHLUNG SPEICHERN"));
+    app.appendChild(form);
+  }
+
+  // ── PROGRESS ──
+  const progCard=h("div",{style:{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"14px",padding:"28px",marginBottom:"14px"}});
+  progCard.appendChild(h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:"16px",flexWrap:"wrap",gap:"8px"}},
+    h("div",{},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".2em",color:"var(--dim)",marginBottom:"4px"}},"AKTUELLER STAND"),h("div",{style:{fontFamily:"'Cinzel',serif",fontSize:"48px",fontWeight:"700",lineHeight:"1",color:"var(--gold-light)"}},`€${fmt(total)}`)),
+    h("div",{style:{textAlign:"right"}},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)",marginBottom:"2px"}},"ZIEL"),h("div",{style:{fontFamily:"'Cinzel',serif",fontSize:"26px",color:"var(--border2)"}},"€3.000"),h("div",{style:{fontFamily:"'Cinzel',serif",fontSize:"20px",color:prog>=100?"var(--green)":"var(--pink)"}},`${prog.toFixed(1)}%`))
+  ));
+  const pbar=h("div",{style:{position:"relative",height:"8px",background:"#111",borderRadius:"4px",overflow:"hidden",marginBottom:"10px"}});
+  pbar.appendChild(h("div",{style:{position:"absolute",left:"0",top:"0",height:"100%",width:`${Math.min(tV/GOAL*100,100)}%`,background:`linear-gradient(90deg,${COL.Tim}55,${COL.Tim})`,borderRadius:"4px",transition:"width .8s cubic-bezier(.4,0,.2,1)"}}));
+  pbar.appendChild(h("div",{style:{position:"absolute",left:`${Math.min(tV/GOAL*100,100)}%`,top:"0",height:"100%",width:`${Math.min(lV/GOAL*100,100)}%`,background:`linear-gradient(90deg,${COL.Lena}55,${COL.Lena})`,borderRadius:"0 4px 4px 0",transition:"width .8s cubic-bezier(.4,0,.2,1)"}}));
+  progCard.appendChild(pbar);
+  progCard.appendChild(h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"8px"}},
+    h("div",{style:{display:"flex",gap:"16px"}},h("span",{style:{color:COL.Tim,fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"}},`● Tim €${fmt(tV)}`),h("span",{style:{color:COL.Lena,fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"}},`● Lena €${fmt(lV)}`)),
+    h("div",{},h("span",{style:{color:"var(--dim)",fontFamily:"'JetBrains Mono',monospace",fontSize:"10px"}},"Noch: "),h("span",{style:{color:total>=GOAL?"var(--green)":"var(--white)",fontFamily:"'Cinzel',serif",fontSize:"15px"}},`€${fmt(Math.max(0,GOAL-total))}`))
+  ));
+  app.appendChild(progCard);
+
+  // ── STATS GRID ──
+  const sg=h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginBottom:"14px"}});
+  [{l:"TIM EINGEZAHLT",v:`€${fmt(tDep)}`,s:`Wert: €${fmt(tV)}`,c:COL.Tim},{l:"LENA EINGEZAHLT",v:`€${fmt(lDep)}`,s:`Wert: €${fmt(lV)}`,c:COL.Lena},{l:"ZINSEN ERTRAG",v:`+€${fmt(interest)}`,c:"var(--green)"},{l:"NOCH FEHLEND",v:`€${fmt(Math.max(0,GOAL-total))}`,c:total>=GOAL?"var(--green)":"var(--gold)"}
+  ].forEach(({l,v,s,c})=>{
+    sg.appendChild(h("div",{style:{background:"var(--surface)",border:`1px solid ${c}22`,borderRadius:"10px",padding:"14px 16px",transition:"all .2s"}},
+      h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"9px",letterSpacing:".15em",color:"var(--dim)",marginBottom:"4px"}},l),
+      h("div",{style:{fontFamily:"'Cinzel',serif",fontSize:"20px",color:c}},v),
+      s?h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)",marginTop:"2px"}},s):null
+    ));
+  });
+  app.appendChild(sg);
+
+  // ── STREAK + KOMMENTAR ──
+  {
+    const monthKeys=new Set(spDeps.map(d=>d.year*100+d.month));
+    const now2=new Date();
+    let streak=0;
+    for(let i=0;i<36;i++){const d=new Date(now2.getFullYear(),now2.getMonth()-i,1);const key=d.getFullYear()*100+(d.getMonth()+1);if(monthKeys.has(key))streak++;else break;}
+    const totalMonths=monthKeys.size;
+    const tV2=calcVal(tD),lV2=calcVal(lD);
+    const timBig=tV2>lV2*1.5&&lV2>0,lenaBig=lV2>tV2*1.5&&tV2>0;
+    const bothEq=Math.abs(tV2-lV2)<5&&total>0;
+    let roast="Solide. Nicht aufregend, aber solide. Finanziell klug! 🧶",roastColor="var(--gold)";
+    if(streak===0&&total===0){roast="Noch kein einziger Cent? Die Couch ruft, aber das Ziel auch... 👀";roastColor="var(--red)";}
+    else if(streak>=12){roast="12+ Monate am Stück! Ihr seid offiziell spießiger als eure Eltern. Stolz auf euch. 🏆";}
+    else if(streak>=6){roast="6 Monate Streak! Habt ihr noch Spaß im Leben oder nur noch ETFs? 😄";}
+    else if(streak>=3){roast="3 Monate Streak – das Kaffee-Budget leidet. Weiter so! ☕📉";}
+    else if(lenaBig){roast="Lena dominiert das Sparbuch. Tim, alles ok bei dir? 👀";roastColor=COL.Lena;}
+    else if(timBig){roast="Tim zahlt deutlich mehr. Lena schuldet Tim mindestens einen Kaffee. ☕";roastColor=COL.Tim;}
+    else if(bothEq){roast="Beide exakt gleich viel – sehr romantisch oder abgesprochen? 🤝";}
+
+    const streakCard=h("div",{style:{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"12px",padding:"18px 20px",marginBottom:"14px"}});
+    const row1=h("div",{style:{display:"flex",gap:"8px",marginBottom:"12px"}});
+    [{icon:streak>=3?"🔥":"❄️",label:"STREAK",value:`${streak} Mo.`,color:streak>=3?"#f97316":"var(--dim)"},{icon:"📆",label:"MONATE",value:`${totalMonths} aktiv`,color:"var(--muted)"},{icon:"🎯",label:"ZUM ZIEL",value:`€${fmtS(Math.max(0,GOAL-total))}`,color:total>=GOAL?"var(--green)":"var(--gold)"}
+    ].forEach(({icon,label,value,color})=>{row1.appendChild(h("div",{style:{flex:"1",background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:"8px",padding:"10px",textAlign:"center"}},h("div",{style:{fontSize:"20px",marginBottom:"4px"}},icon),h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"9px",letterSpacing:".1em",color:"var(--dim)",marginBottom:"3px"}},label),h("div",{style:{fontFamily:"'Cinzel',serif",fontSize:"15px",color}},value)));});
+    streakCard.appendChild(row1);
+    streakCard.appendChild(h("div",{style:{background:"var(--bg2)",border:`1px solid ${roastColor}22`,borderRadius:"8px",padding:"12px 14px",fontFamily:"'JetBrains Mono',monospace",fontSize:"11px",color:roastColor,lineHeight:"1.7",fontStyle:"italic"}},
+      h("span",{style:{color:`${roastColor}88`,fontStyle:"normal",fontFamily:"'Cinzel',serif",fontSize:"10px",letterSpacing:".1em",display:"block",marginBottom:"4px"}},"SPARPLAN-KOMMENTAR"),roast
+    ));
+    app.appendChild(streakCard);
+  }
+
+  // ── TAB NAV ──
+  const tnav=h("div",{class:"sp-tabnav"});
+  [["overview","📊 Übersicht"],["forecast","🔮 Prognose"],["vs","💡 ETF vs Schublade"],["goals","🗺️ Ziele"],["activities","🎲 Unternehmungen"],["history","📋 Verlauf"]].forEach(([t,l])=>{
+    const btn=h("button",{class:`sp-tab${spTab===t?" active":""}`,onclick:()=>{spTab=t;spRender();}},l);
+    tnav.appendChild(btn);
+  });
+  app.appendChild(tnav);
+
+  const C=h("div",{});
+
+  // ── OVERVIEW ──
+  if(spTab==="overview"){
+    const dc=h("div",{class:"sp-card"});
+    dc.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".2em",color:"var(--dim)",marginBottom:"18px"}},"⚔️ TIM VS LENA"));
+    if(total>0){
+      const timPct=tV/total*100,lenaPct=lV/total*100,leader=tV>=lV?"Tim":"Lena",leaderColor=tV>=lV?COL.Tim:COL.Lena,gap=Math.abs(tV-lV);
+      dc.appendChild(h("div",{style:{textAlign:"center",marginBottom:"16px"}},
+        h("div",{class:"crown",style:{fontSize:"22px"}},"👑"),
+        h("div",{style:{fontFamily:"'Cinzel',serif",fontSize:"24px",color:leaderColor}},leader+" führt"),
+        h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"11px",color:"var(--dim)",marginTop:"4px"}},`mit €${fmt(gap)} Vorsprung`)
+      ));
+      dc.appendChild(h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}},
+        h("div",{style:{textAlign:"center"}},h("div",{style:{color:COL.Tim,fontFamily:"'Cinzel',serif",fontSize:"28px"}},`€${fmt(tV)}`),h("div",{style:{color:COL.Tim+"66",fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".15em",marginTop:"2px"}},"TIM")),
+        h("div",{style:{color:"var(--border)",fontFamily:"'Cinzel',serif",fontSize:"18px"}},"VS"),
+        h("div",{style:{textAlign:"center"}},h("div",{style:{color:COL.Lena,fontFamily:"'Cinzel',serif",fontSize:"28px"}},`€${fmt(lV)}`),h("div",{style:{color:COL.Lena+"66",fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".15em",marginTop:"2px"}},"LENA"))
+      ));
+      const vb=h("div",{class:"versus-bar",style:{marginBottom:"8px"}});
+      vb.appendChild(h("div",{class:"versus-tim",style:{width:`${timPct}%`}}));
+      vb.appendChild(h("div",{class:"versus-lena",style:{width:`${lenaPct}%`}}));
+      dc.appendChild(vb);
+      dc.appendChild(h("div",{style:{display:"flex",justifyContent:"space-between"}},h("span",{style:{color:COL.Tim,fontFamily:"'JetBrains Mono',monospace",fontSize:"10px"}},"Tim "+timPct.toFixed(0)+"%"),h("span",{style:{color:COL.Lena,fontFamily:"'JetBrains Mono',monospace",fontSize:"10px"}},"Lena "+lenaPct.toFixed(0)+"%")));
+      dc.appendChild(h("div",{style:{height:"1px",background:"var(--border)",margin:"16px 0"}}));
+    }
+    const mm={};spDeps.forEach(d=>{const k=`${MO[d.month-1]} ${d.year}`;if(!mm[k])mm[k]={label:k,Tim:0,Lena:0,sort:d.year*100+d.month};mm[k][d.person]+=d.amount;});
+    const mly=Object.values(mm).sort((a,b)=>a.sort-b.sort);
+    if(mly.length){dc.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".15em",color:"var(--dim)",marginBottom:"10px"}},"💰 EINZAHLUNGEN PRO MONAT"));dc.appendChild(svgBar(mly,["Tim","Lena"],[COL.Tim,COL.Lena]));dc.appendChild(h("div",{style:{display:"flex",gap:"16px",marginTop:"6px"}},h("span",{style:{color:COL.Tim,fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"}},"■ Tim"),h("span",{style:{color:COL.Lena,fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"}},"■ Lena")));}
+    C.appendChild(dc);
+
+    if(total>0){
+      const kaufItems=[{emoji:"☕",name:"Kaffees bei Starbucks",preis:5.5,funny:"Oat Milk Latte forever."},{emoji:"🍕",name:"Pizzen (geliefert)",preis:14,funny:"Genug Mozzarella um darin zu ertrinken."},{emoji:"✈️",name:"Flüge nach Mallorca",preis:89,funny:"Ohne 'wir schauen noch kurz'!"},{emoji:"🏨",name:"Hotelnächte",preis:95,funny:"Mit Frühstück."},{emoji:"🎢",name:"Tage Europapark",preis:59,funny:"Warteschlangen inklusive."},{emoji:"🍣",name:"Sushi-Abende für 2",preis:55,funny:"Dritter Nachschlag? Kein schlechtes Gewissen."},{emoji:"🎬",name:"Kinoabende inkl. Popcorn",preis:28,funny:"Popcorn kostet mehr als der Film."}];
+      const kk=h("div",{class:"sp-card"});
+      kk.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".2em",color:"var(--dim)",marginBottom:"16px"}},"🛍️ WAS KÖNNT IHR EUCH SCHON LEISTEN?"));
+      kaufItems.forEach(item=>{
+        const anzahl=Math.floor(total/item.preis);if(anzahl<1)return;
+        const pct=Math.min(anzahl/(Math.ceil(anzahl/10)*10)*100,100);
+        const row=h("div",{style:{marginBottom:"14px"}});
+        row.appendChild(h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:"5px"}},h("span",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"12px",color:"var(--text)"}},item.emoji+" "+item.name),h("span",{style:{color:"var(--gold-light)",fontFamily:"'Cinzel',serif",fontSize:"18px"}},`× ${anzahl.toLocaleString("de-DE")}`)));
+        const barWrap=h("div",{style:{height:"4px",background:"#111",borderRadius:"2px",marginBottom:"4px",overflow:"hidden"}});
+        const bar=h("div",{style:{height:"100%",width:"0%",background:"linear-gradient(90deg,var(--blue),var(--pink))",borderRadius:"2px",transition:"width .9s ease"}});
+        barWrap.appendChild(bar);row.appendChild(barWrap);
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{if(bar.isConnected)bar.style.width=`${pct}%`;}));
+        row.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)",fontStyle:"italic"}},item.funny));
+        kk.appendChild(row);
+      });
+      C.appendChild(kk);
+    }
+  }
+
+  if(spTab==="forecast"){
+    const now=new Date();let tv=calcVal(tD),lv2=calcVal(lD);
+    const pts2=[{label:"Heute",total:+(tv+lv2).toFixed(2)}];let y=now.getFullYear(),m=now.getMonth()+1;
+    for(let i=0;i<120;i++){tv=(tv+spExtra/2)*(1+MR);lv2=(lv2+spExtra/2)*(1+MR);m++;if(m>12){m=1;y++;}pts2.push({label:`${MO[m-1]} ${String(y).slice(2)}`,total:+(tv+lv2).toFixed(2)});if(tv+lv2>=GOAL)break;}
+    const ll=pts2[pts2.length-1].label;const ml=pts2.length-1;
+    const speeds=[{max:6,icon:"🚀",name:"RAKETE",color:"#a855f7"},{max:12,icon:"⚡",name:"BLITZ",color:"var(--gold)"},{max:18,icon:"🚄",name:"ICE",color:"var(--blue)"},{max:30,icon:"🚲",name:"E-BIKE",color:"var(--green)"},{max:48,icon:"🐢",name:"GEMÜTLICH",color:"var(--muted)"},{max:999,icon:"🐌",name:"SCHNECKE",color:"var(--dim)"}];
+    const spd=speeds.find(s=>ml<=s.max)||speeds[speeds.length-1];
+    const fc=h("div",{class:"sp-card"});
+    fc.appendChild(h("div",{style:{background:`linear-gradient(135deg,${spd.color}11,${spd.color}05)`,border:`1px solid ${spd.color}33`,borderRadius:"10px",padding:"14px 16px",marginBottom:"18px",display:"flex",alignItems:"center",gap:"14px"}},h("div",{style:{fontSize:"32px"}},spd.icon),h("div",{},h("div",{style:{color:spd.color,fontFamily:"'Cinzel',serif",fontSize:"18px"}},"SPARGESCHWINDIGKEIT: "+spd.name))));
+    fc.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".2em",color:"var(--dim)",marginBottom:"14px"}},"🔮 WANN ERREICHEN WIR €3.000?"));
+    fc.appendChild(h("div",{style:{marginBottom:"16px"}},h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"6px"}},h("span",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"11px",color:"var(--muted)"}},"Monatliche Einzahlung"),h("span",{style:{color:"var(--gold-light)",fontFamily:"'Cinzel',serif",fontSize:"18px"}},`€${spExtra}`)),h("input",{type:"range",min:"20",max:"500",step:"10",value:spExtra,oninput:e=>{spExtra=parseInt(e.target.value);spRender();}})));
+    fc.appendChild(h("div",{style:{background:"var(--bg2)",border:"1px solid rgba(45,204,122,.2)",borderRadius:"10px",padding:"14px 18px",marginBottom:"16px",display:"flex",justifyContent:"space-between",alignItems:"center"}},h("div",{},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)",marginBottom:"2px"}},"ZIEL ERREICHT IN"),h("div",{style:{color:"var(--green)",fontFamily:"'Cinzel',serif",fontSize:"24px"}},ll)),h("div",{style:{textAlign:"right"}},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)",marginBottom:"2px"}},"IN CA."),h("div",{style:{color:"var(--white)",fontFamily:"'Cinzel',serif",fontSize:"24px"}},`${ml} Mo.`))));
+    fc.appendChild(svgLine(pts2,["total"],["#4ade80"]));
+    C.appendChild(fc);
+  }
+
+  if(spTab==="vs"){
+    const now=new Date(),cd=[];let wi=total,ni=totDep;
+    for(let i=1;i<=60;i++){wi=(wi+spExtra)*(1+MR);ni+=spExtra;const mo=((now.getMonth()+i)%12),y2=now.getFullYear()+Math.floor((now.getMonth()+i)/12);if(i%3===0||i===1)cd.push({label:`${MO[mo]} ${String(y2).slice(2)}`,etf:+wi.toFixed(2),schublade:+ni.toFixed(2)});}
+    const fw=cd[cd.length-1]?.etf??total,fn=cd[cd.length-1]?.schublade??totDep,diff=fw-fn;
+    C.appendChild(h("div",{class:"sp-card"},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".2em",color:"var(--dim)",marginBottom:"14px"}},"⚙️ MONATLICHE EINZAHLUNG"),h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"6px"}},h("span",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"11px",color:"var(--muted)"}},"Gesamt pro Monat"),h("span",{style:{color:"var(--gold-light)",fontFamily:"'Cinzel',serif",fontSize:"18px"}},`€${spExtra}`)),h("input",{type:"range",min:"20",max:"500",step:"10",value:spExtra,oninput:e=>{spExtra=parseInt(e.target.value);spRender();}})));
+    C.appendChild(h("div",{style:{background:"linear-gradient(135deg,#030a03,#050805)",border:"1px solid rgba(45,204,122,.3)",borderRadius:"14px",padding:"24px",textAlign:"center",marginBottom:"12px"}},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".3em",color:"rgba(45,204,122,.5)",marginBottom:"8px"}},"IN 5 JAHREN — EUER VORTEIL"),h("div",{style:{color:"var(--green)",fontFamily:"'Cinzel',serif",fontSize:"48px"}},`+€${fmt(diff)}`),h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"11px",color:"rgba(45,204,122,.6)",marginTop:"8px"}},"mehr mit ETF als in der Schublade 🎉")));
+    const gg=h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"12px"}});
+    gg.appendChild(h("div",{style:{background:"var(--surface)",border:"1px solid rgba(45,204,122,.2)",borderRadius:"10px",padding:"16px",textAlign:"center"}},h("div",{style:{fontSize:"22px",marginBottom:"6px"}},"📈"),h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".1em",color:"rgba(45,204,122,.5)",marginBottom:"4px"}},"XTRACKERS ETF"),h("div",{style:{color:"var(--green)",fontFamily:"'Cinzel',serif",fontSize:"26px"}},`€${fmt(fw)}`),h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"rgba(45,204,122,.4)",marginTop:"4px"}},"mit 3.6% p.a.")));
+    gg.appendChild(h("div",{style:{background:"var(--surface)",border:"1px solid rgba(200,146,42,.2)",borderRadius:"10px",padding:"16px",textAlign:"center"}},h("div",{style:{fontSize:"22px",marginBottom:"6px"}},"🪣"),h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".1em",color:"rgba(200,146,42,.5)",marginBottom:"4px"}},"SCHUBLADE"),h("div",{style:{color:"var(--gold)",fontFamily:"'Cinzel',serif",fontSize:"26px"}},`€${fmt(fn)}`),h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"rgba(200,146,42,.4)",marginTop:"4px"}},"0% Zinsen")));
+    C.appendChild(gg);
+    const vc=h("div",{class:"sp-card"});vc.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".2em",color:"var(--dim)",marginBottom:"14px"}},"📊 ENTWICKLUNG ÜBER 5 JAHRE"));vc.appendChild(svgLine(cd,["etf","schublade"],["#4ade80","#c8922a"]));vc.appendChild(h("div",{style:{display:"flex",gap:"16px",marginTop:"10px"}},h("span",{style:{color:"var(--green)",fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"}},"● ETF"),h("span",{style:{color:"var(--gold)",fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"}},"● Schublade")));C.appendChild(vc);
+  }
+
+  if(spTab==="goals"){
+    const mapCard=h("div",{style:{marginBottom:"14px"}});
+    mapCard.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".2em",color:"var(--dim)",marginBottom:"12px"}},"🗺️ EURE REISEZIELE"));
+    if(!showGoalForm){const mw=h("div",{class:"map-wrap"});mw.appendChild(h("div",{id:"travel-map"}));mapCard.appendChild(mw);setTimeout(()=>initOrUpdateMap(goals,total),50);}
+    const unlockedCount=goals.filter(g=>isUnlocked(g,total)).length;
+    mapCard.appendChild(h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"14px"}},
+      h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"11px",color:"var(--green)"}},`✅ ${unlockedCount} von ${goals.length} freigeschaltet`),
+      h("button",{class:"sp-btn",style:{background:showGoalForm?"var(--surface)":"linear-gradient(135deg,#f472b6,#a855f7)",border:showGoalForm?"1px solid var(--border2)":"none",color:showGoalForm?"var(--dim)":"var(--white)",padding:"8px 14px",fontSize:"11px",fontWeight:"700",letterSpacing:".1em"},onclick:()=>{showGoalForm=!showGoalForm;spRender();}},showGoalForm?"✕ ABBRECHEN":"+ ZIEL")
+    ));
+
+    if(showGoalForm){
+      const emojiOpts=["✈️","🗾","🏝️","🌋","🗽","🌞","🏔️","🏙️","🎭","🍜","🎿","🌊"];
+      const ngf=h("div",{style:{background:"var(--surface)",border:"1px solid rgba(200,146,42,.2)",borderRadius:"10px",padding:"16px",marginBottom:"12px",animation:"slideUp .2s ease"}});
+      ngf.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".15em",color:"var(--gold)",marginBottom:"12px"}},"✨ NEUES ZIEL"));
+      const searchStatus=h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)",marginTop:"4px",minHeight:"14px"}});
+      const ngi=h("input",{type:"text",value:newGoalName,placeholder:"z.B. Tokyo, Paris...",style:{width:"100%",background:"#030405",border:"1px solid var(--border2)",borderRadius:"4px",color:"var(--white)",padding:"9px 12px",fontSize:"13px",fontFamily:"'JetBrains Mono',monospace"}});
+      ngf.appendChild(h("div",{style:{marginBottom:"10px"}},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)",marginBottom:"5px"}},"NAME"),ngi,searchStatus));
+      ngf.appendChild(h("div",{style:{marginBottom:"10px"}},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)",marginBottom:"5px"}},"EMOJI"),h("div",{style:{display:"flex",gap:"6px",flexWrap:"wrap"}},...emojiOpts.map(e=>h("button",{class:"sp-btn",style:{width:"32px",height:"32px",fontSize:"16px",background:newGoalEmoji===e?"rgba(200,146,42,.15)":"var(--bg2)",border:`1px solid ${newGoalEmoji===e?"var(--gold)":"var(--border)"}`},onclick:()=>{newGoalEmoji=e;spRender();}},e)))));
+      const nbb=h("input",{type:"number",value:newGoalBudget,placeholder:"500",style:{width:"100%",background:"#030405",border:"1px solid var(--border2)",borderRadius:"4px",color:"var(--white)",padding:"9px 12px",fontSize:"13px",fontFamily:"'JetBrains Mono',monospace"},oninput:e=>newGoalBudget=parseInt(e.target.value)||0});
+      ngf.appendChild(h("div",{style:{marginBottom:"12px"}},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)",marginBottom:"5px"}},"SPARZIEL (€)"),nbb));
+      const locInfo=h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"11px",color:"var(--dim)",marginBottom:"8px",minHeight:"16px"}},"Tippe einen Namen ein oder klick auf die Karte");
+      const pickerWrap=h("div",{id:"picker-map",style:{height:"200px",borderRadius:"6px",border:"1px solid var(--border2)",marginBottom:"12px",overflow:"hidden"}});
+      ngf.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)",marginBottom:"5px"}},"📍 ORT"));
+      ngf.appendChild(locInfo);ngf.appendChild(pickerWrap);
+      ngf.appendChild(h("button",{class:"sp-btn",style:{width:"100%",background:"linear-gradient(135deg,#a855f7,#7c3aed)",color:"var(--white)",padding:"12px",fontSize:"12px",fontWeight:"700",letterSpacing:".1em"},onclick:async()=>{
+        if(!newGoalName.trim())return;
+        const ng={id:uid(),name:newGoalName.trim(),emoji:newGoalEmoji,budget:newGoalBudget,lat:newGoalLat,lng:newGoalLng,tasks:["Flüge buchen","Hotel buchen"],unlocked:false,tasksDone:[]};
+        goals.push(ng);await sbGoals.save({...ng,tasks:JSON.stringify(ng.tasks),tasksDone:JSON.stringify(ng.tasksDone)});saveGoalsLocal();newGoalName="";showGoalForm=false;spRender();
+      }},"💾 ZIEL SPEICHERN"));
+      mapCard.appendChild(ngf);
+      setTimeout(()=>{
+        if(!document.getElementById("picker-map"))return;
+        const pm=L.map("picker-map",{center:[20,15],zoom:2,zoomControl:true,attributionControl:false});
+        L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19}).addTo(pm);
+        let pickerMarker=null;
+        const placeMarker=(lat,lng,label)=>{if(pickerMarker)pm.removeLayer(pickerMarker);pickerMarker=L.marker([lat,lng],{icon:L.divIcon({html:`<div style="font-size:20px">${newGoalEmoji}</div>`,className:"",iconSize:[24,24],iconAnchor:[12,12]})}).addTo(pm);pm.flyTo([lat,lng],5,{duration:1.2});locInfo.textContent=`✓ ${label}`;locInfo.style.color="#a855f7";};
+        let st=null;ngi.addEventListener("input",e=>{newGoalName=e.target.value;clearTimeout(st);if(e.target.value.length<2){searchStatus.textContent="";return;}searchStatus.textContent="🔍 Suche...";st=setTimeout(async()=>{try{const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(e.target.value)}&format=json&limit=1&accept-language=de`);const d=await r.json();if(d&&d[0]){newGoalLat=+parseFloat(d[0].lat).toFixed(5);newGoalLng=+parseFloat(d[0].lon).toFixed(5);placeMarker(newGoalLat,newGoalLng,e.target.value);searchStatus.textContent="✓ Gefunden";searchStatus.style.color="var(--green)";}else{searchStatus.textContent="❓ Nicht gefunden";}}catch(err){}},600);});
+        pm.on("click",async e=>{const {lat,lng}=e.latlng;newGoalLat=+lat.toFixed(5);newGoalLng=+lng.toFixed(5);placeMarker(lat,lng,"...");try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=de`);const d=await r.json();const place=d.address?.city||d.address?.town||d.address?.country||"";if(ngi.value===""){ngi.value=place;newGoalName=place;}locInfo.textContent=`✓ ${place||"Ort gewählt"}`;locInfo.style.color="#a855f7";}catch(err){}});
+      },60);
+    }
+    C.appendChild(mapCard);
+
+    [...goals].sort((a,b)=>{const au=isUnlocked(a,total),bu=isUnlocked(b,total);if(au!==bu)return au?-1:1;return a.budget-b.budget;}).forEach(g=>{
+      const unlocked=isUnlocked(g,total);const budgetOk=total>=g.budget;const bPct=Math.min(total/g.budget*100,100);
+      const card=h("div",{class:`goal-card${unlocked?" unlocked":""}`});
+      const hRow=h("div",{style:{display:"flex",alignItems:"center",gap:"12px",marginBottom:"12px"}});
+      hRow.appendChild(h("div",{style:{fontSize:"26px",lineHeight:"1",filter:unlocked?"none":"grayscale(1) opacity(.35)"}},g.emoji));
+      const titleCol=h("div",{style:{flex:"1"}});
+      titleCol.appendChild(h("div",{style:{fontFamily:"'Cinzel',serif",fontSize:"18px",color:unlocked?"var(--green)":"var(--white)"}},g.name));
+      titleCol.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)",marginTop:"2px"}},`Sparziel: €${g.budget.toLocaleString("de-DE")}`));
+      hRow.appendChild(titleCol);
+      hRow.appendChild(h("div",{style:{background:unlocked?"rgba(45,204,122,.1)":"rgba(255,68,68,.08)",border:`1px solid ${unlocked?"rgba(45,204,122,.3)":"rgba(255,68,68,.2)"}`,borderRadius:"20px",padding:"4px 10px",fontFamily:"'JetBrains Mono',monospace",fontSize:"9px",letterSpacing:".1em",color:unlocked?"var(--green)":"rgba(255,68,68,.6)"}},unlocked?"✅ FREI":"🔒 GESPERRT"));
+      card.appendChild(hRow);
+      card.appendChild(h("div",{style:{marginBottom:"10px"}},
+        h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},h("span",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)"}},"💰 SPARTOPF"),h("span",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:budgetOk?"var(--green)":"var(--gold)"}},`€${fmtS(total)} / €${g.budget.toLocaleString("de-DE")}`)),
+        h("div",{style:{height:"4px",background:"#111",borderRadius:"2px",overflow:"hidden"}},h("div",{style:{height:"100%",width:`${bPct}%`,background:budgetOk?"var(--green)":"linear-gradient(90deg,var(--blue),var(--gold))",borderRadius:"2px",transition:"width .6s ease"}}))
+      ));
+      if(g.tasks.length){
+        card.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".1em",color:"var(--dim)",marginBottom:"6px"}},`📋 AUFGABEN (${g.tasksDone.length}/${g.tasks.length})`));
+        const tList=h("div",{});g.tasks.forEach(task=>{const done=g.tasksDone.includes(task);const row=h("div",{class:"task-row",onclick:()=>toggleTask(g.id,task,total)});row.appendChild(h("div",{class:`task-box${done?" done":""}`},done?"✓":""));row.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"11px",color:done?"var(--green)":"var(--muted)",textDecoration:done?"line-through":"none",flex:"1"}},task));tList.appendChild(row);});card.appendChild(tList);
+      }
+      card.appendChild(h("div",{style:{marginTop:"10px",textAlign:"right"}},h("button",{class:"sp-btn",style:{background:"rgba(255,68,68,.08)",borderRadius:"4px",color:"rgba(255,68,68,.6)",padding:"4px 9px",fontSize:"10px",fontFamily:"'JetBrains Mono',monospace"},onclick:()=>{goalDeleteId=g.id;spRender();}},"🗑️")));
+      C.appendChild(card);
+    });
+  }
+
+  if(spTab==="activities"){
+    const todo=activities.filter(a=>!a.done),done=activities.filter(a=>a.done);
+    const pct=activities.length>0?Math.round(done.length/activities.length*100):0;
+    C.appendChild(h("div",{class:"sp-card"},
+      h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}},h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".2em",color:"var(--dim"}},"🎲 UNTERNEHMUNGEN 2025"),h("div",{style:{fontFamily:"'Cinzel',serif",fontSize:"18px",color:"var(--pink)"}},`${done.length} / ${activities.length}`)),
+      h("div",{class:"sp-progbar"},h("div",{class:"sp-progbar-fill",style:{width:`${pct}%`,background:"linear-gradient(90deg,var(--blue),var(--pink))"}})),
+      h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)"}},`${pct}% geschafft 🎉`)
+    ));
+    const pickerCard=h("div",{style:{background:"linear-gradient(135deg,#0d0814,#140d1a)",border:"1px solid rgba(168,85,247,.3)",borderRadius:"14px",padding:"22px",marginBottom:"14px",textAlign:"center"}});
+    if(pickedActivity&&!pickedActivity.done){
+      pickerCard.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".2em",color:"rgba(168,85,247,.5)",marginBottom:"8px"}},"🎲 HEUTE MACHEN WIR..."));
+      pickerCard.appendChild(h("div",{style:{fontFamily:"'Cinzel',serif",fontSize:"28px",lineHeight:"1.1",color:"var(--white)",marginBottom:"16px"}},pickedActivity.name));
+      pickerCard.appendChild(h("div",{style:{display:"flex",gap:"10px",justifyContent:"center"}},
+        h("button",{class:"sp-btn",style:{background:"rgba(45,204,122,.15)",border:"1px solid rgba(45,204,122,.3)",color:"var(--green)",padding:"11px 20px",fontSize:"12px",fontWeight:"700",fontFamily:"'JetBrains Mono',monospace",letterSpacing:".1em"},onclick:async()=>{pickedActivity.done=true;pickedActivity.doneAt=new Date().toLocaleDateString("de-DE");await sbAct.save(pickedActivity);saveAct();spawnConfetti();pickedActivity=null;spRender();}},"✅ GEMACHT!"),
+        h("button",{class:"sp-btn",style:{background:"var(--surface)",border:"1px solid var(--border)",color:"var(--muted)",padding:"11px 20px",fontSize:"11px",fontFamily:"'JetBrains Mono',monospace"},onclick:()=>{pickedActivity=null;spRender();}},"↩ Andere")
+      ));
+    } else if(todo.length>0){
+      pickerCard.appendChild(h("div",{style:{fontSize:"44px",marginBottom:"12px"}},"🎲"));
+      pickerCard.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"12px",color:"var(--muted)",marginBottom:"18px"}},`${todo.length} Unternehmungen warten noch...`));
+      pickerCard.appendChild(h("button",{class:"sp-btn",style:{background:"linear-gradient(135deg,#a855f7,#7c3aed)",color:"var(--white)",padding:"14px 32px",fontSize:"13px",fontWeight:"700",fontFamily:"'JetBrains Mono',monospace",letterSpacing:".1em"},onclick:()=>{pickedActivity=todo[Math.floor(Math.random()*todo.length)];spRender();}},"🎲 ZUFÄLLIG AUSWÄHLEN"));
+    } else {pickerCard.appendChild(h("div",{style:{fontSize:"44px",marginBottom:"10px"}},"🏆"));pickerCard.appendChild(h("div",{style:{fontFamily:"'Cinzel',serif",fontSize:"22px",color:"var(--green)"}},"ALLE GESCHAFFT!"));}
+    C.appendChild(pickerCard);
+
+    const addRow=h("div",{style:{display:"flex",gap:"8px",marginBottom:"16px"}});
+    const ai=h("input",{type:"text",placeholder:"Neue Unternehmung hinzufügen...",style:{flex:"1",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"4px",color:"var(--white)",padding:"9px 12px",fontSize:"12px",fontFamily:"'JetBrains Mono',monospace"}});
+    addRow.appendChild(ai);addRow.appendChild(h("button",{class:"sp-btn",style:{background:"linear-gradient(135deg,var(--pink),#a855f7)",color:"var(--white)",padding:"9px 16px",fontSize:"12px",fontWeight:"700",fontFamily:"'JetBrains Mono',monospace"},onclick:async()=>{const v=ai.value.trim();if(!v)return;const na={id:uid(),name:v,done:false,doneAt:null};activities.push(na);await sbAct.save(na);saveAct();ai.value="";spRender();}},"+ ADD"));
+    C.appendChild(addRow);
+
+    if(todo.length){C.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".15em",color:"var(--dim)",marginBottom:"8px"}},`📋 NOCH OFFEN (${todo.length})`));todo.forEach(a=>{const ip=pickedActivity?.id===a.id;const row=h("div",{class:"activity-item",style:{border:`1px solid ${ip?"rgba(168,85,247,.4)":"var(--border)"}`,background:ip?"rgba(168,85,247,.05)":"var(--surface)"}});row.appendChild(h("div",{style:{fontSize:"14px"}},"🎯"));row.appendChild(h("div",{style:{flex:"1",fontFamily:"'JetBrains Mono',monospace",fontSize:"12px",color:ip?"#d8b4fe":"var(--text)"}},a.name));if(ip)row.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"9px",letterSpacing:".1em",color:"#a855f7"}},"← GEWÄHLT"));row.appendChild(h("button",{class:"sp-btn",style:{background:"rgba(255,68,68,.08)",borderRadius:"4px",color:"rgba(255,68,68,.6)",padding:"4px 8px",fontSize:"10px",fontFamily:"'JetBrains Mono',monospace"},onclick:async(e)=>{e.stopPropagation();await sbAct.del(a.id);activities=activities.filter(x=>x.id!==a.id);saveAct();if(pickedActivity?.id===a.id)pickedActivity=null;spRender();}},"🗑️"));C.appendChild(row);});}
+    if(done.length){C.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",letterSpacing:".15em",color:"var(--dim)",margin:"16px 0 8px"}},"✅ ERLEDIGT"));done.forEach(a=>{const row=h("div",{class:"activity-item done-item"});row.appendChild(h("div",{style:{fontSize:"14px"}},"✅"));const nw=h("div",{style:{flex:"1"}});nw.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"12px",color:"rgba(45,204,122,.5)",textDecoration:"line-through"}},a.name));if(a.doneAt)nw.appendChild(h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"10px",color:"var(--dim)",marginTop:"2px"}},a.doneAt));row.appendChild(nw);row.appendChild(h("button",{class:"sp-btn",style:{background:"var(--surface)",borderRadius:"4px",color:"var(--dim)",padding:"4px 8px",fontSize:"10px",fontFamily:"'JetBrains Mono',monospace"},onclick:async()=>{a.done=false;a.doneAt=null;await sbAct.save(a);saveAct();spRender();}},"↩"));C.appendChild(row);});}
+  }
+
+  if(spTab==="history"){
+    if(!spDeps.length){C.appendChild(h("div",{style:{textAlign:"center",padding:"50px",fontFamily:"'Cinzel',serif",color:"var(--dim)",fontSize:"18px",letterSpacing:".1em"}},"NOCH KEINE EINZAHLUNGEN"));}
+    else{const list=h("div",{style:{display:"flex",flexDirection:"column",gap:"8px"}});[...spDeps].sort((a,b)=>b.year!==a.year?b.year-a.year:b.month-a.month).forEach(d=>{list.appendChild(h("div",{style:{background:"var(--surface)",borderLeft:`3px solid ${COL[d.person]}`,border:`1px solid ${COL[d.person]}18`,borderRadius:"8px",padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"8px"}},h("div",{style:{display:"flex",gap:"12px",alignItems:"center",flexWrap:"wrap"}},h("span",{style:{color:COL[d.person],fontFamily:"'Cinzel',serif",fontSize:"14px"}},d.person),h("span",{style:{color:"var(--dim)",fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"}},`${MO[d.month-1]} ${d.year}`),d.note?h("span",{style:{color:"var(--dim)",fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"}},`· ${d.note}`):null),h("div",{style:{display:"flex",gap:"12px",alignItems:"center"}},h("span",{style:{color:"var(--gold-light)",fontFamily:"'Cinzel',serif",fontSize:"18px"}},`€${fmt(d.amount)}`),h("button",{class:"sp-btn",style:{background:"rgba(255,68,68,.08)",borderRadius:"4px",color:"rgba(255,68,68,.6)",padding:"4px 9px",fontSize:"10px",fontFamily:"'JetBrains Mono',monospace"},onclick:()=>{spDelId=d.id;spRender();}},"🗑️"))));});C.appendChild(list);}
+  }
+
+  app.appendChild(C);
+
+  // Goal delete modal
+  if(goalDeleteId){app.appendChild(h("div",{style:{position:"fixed",inset:"0",background:"rgba(0,0,0,.9)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:"500",backdropFilter:"blur(8px)"}},h("div",{style:{background:"var(--surface)",border:"1px solid rgba(255,68,68,.2)",borderRadius:"12px",padding:"32px",maxWidth:"280px",width:"90%",textAlign:"center",animation:"slideUp .2s ease"}},h("div",{style:{fontSize:"28px",marginBottom:"12px"}},"🗺️"),h("div",{style:{fontFamily:"'Cinzel',serif",fontSize:"20px",color:"var(--gold-light)",marginBottom:"8px"}},"ZIEL LÖSCHEN?"),h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"11px",color:"var(--muted)",marginBottom:"22px"}},"Das Ziel wird für beide gelöscht."),h("div",{style:{display:"flex",gap:"10px"}},h("button",{class:"sp-btn",style:{flex:"1",background:"var(--surface)",border:"1px solid var(--border)",color:"var(--muted)",padding:"12px",fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"},onclick:()=>{goalDeleteId=null;spRender();}},"NEIN"),h("button",{class:"sp-btn",style:{flex:"1",background:"rgba(255,68,68,.2)",border:"1px solid rgba(255,68,68,.3)",color:"var(--red)",padding:"12px",fontWeight:"700",fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"},onclick:async()=>{await sbGoals.del(goalDeleteId);goals=goals.filter(g=>g.id!==goalDeleteId);saveGoalsLocal();goalDeleteId=null;spRender();}},"LÖSCHEN"))));}
+
+  // Dep delete modal
+  if(spDelId){app.appendChild(h("div",{style:{position:"fixed",inset:"0",background:"rgba(0,0,0,.9)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:"500",backdropFilter:"blur(8px)"}},h("div",{style:{background:"var(--surface)",border:"1px solid rgba(255,68,68,.2)",borderRadius:"12px",padding:"32px",maxWidth:"280px",width:"90%",textAlign:"center",animation:"slideUp .2s ease"}},h("div",{style:{fontSize:"28px",marginBottom:"12px"}},"🗑️"),h("div",{style:{fontFamily:"'Cinzel',serif",fontSize:"20px",color:"var(--gold-light)",marginBottom:"8px"}},"EINZAHLUNG LÖSCHEN?"),h("div",{style:{fontFamily:"'JetBrains Mono',monospace",fontSize:"11px",color:"var(--muted)",marginBottom:"22px"}},"Wird endgültig entfernt."),h("div",{style:{display:"flex",gap:"10px"}},h("button",{class:"sp-btn",style:{flex:"1",background:"var(--surface)",border:"1px solid var(--border)",color:"var(--muted)",padding:"12px",fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"},onclick:()=>{spDelId=null;spRender();}},"NEIN"),h("button",{class:"sp-btn",style:{flex:"1",background:"rgba(255,68,68,.2)",border:"1px solid rgba(255,68,68,.3)",color:"var(--red)",padding:"12px",fontWeight:"700",fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"},onclick:async()=>{await sb.del(spDelId);spDeps=spDeps.filter(d=>d.id!==spDelId);spDelId=null;spRender();}},"LÖSCHEN"))));}
+}
 </script>
 </body>
 </html>
